@@ -1,5 +1,6 @@
 with Interfaces.C;
 with Interfaces.C.Strings;
+
 package body Minimal is
 
   package IC renames Interfaces.C;
@@ -10,7 +11,6 @@ package body Minimal is
   Core_Api         : access constant godot_gdnative_core_api_struct;
   Nativescript_Api : access constant godot_gdnative_ext_nativescript_api_struct;
 
-
   type Godot_String_Kind is (
     GDNATIVE_INITIALIZE_MESSAGE,
     GDNATIVE_TERMINATE_MESSAGE,
@@ -20,7 +20,7 @@ package body Minimal is
     C_Item     : IC.wchar_array := IC.To_C (Item);
     Godot_Item : aliased godot_string;
   begin
-    Core_Api.godot_string_new_with_wide_string (Godot_Item'Unchecked_Access, C_Item (0)'Unchecked_Access, C_Item'Length);
+    Core_Api.godot_string_new_with_wide_string (Godot_Item'access, C_Item (0)'access, C_Item'Length);
     return Godot_Item;
   end;
 
@@ -40,12 +40,12 @@ package body Minimal is
 
   procedure Finalize (Strings : in out Godot_String_Array) is begin
     for Key in Godot_String_Kind'range loop
-      Core_Api.godot_free (Strings (Key)'Address);
+      Core_Api.godot_string_destroy (Strings (Key)'access);
     end loop;
   end;
 
   procedure Godot_Print (Item : in Godot_String_Kind) is begin
-    Core_Api.godot_print (Strings (Item)'Unchecked_Access);
+    Core_Api.godot_print (Strings (Item)'access);
   end;
 
   procedure GDNative_Intialize (p_options : access godot_gdnative_init_options) is 

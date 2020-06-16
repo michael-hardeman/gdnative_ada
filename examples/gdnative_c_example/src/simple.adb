@@ -32,27 +32,24 @@ package body Simple is
   end;
 
   procedure godot_nativescript_init (p_handle : System.Address) is 
-    create      : godot_instance_create_func  := (Object.simple_constructor'access, System.Null_Address, null);
-    destroy     : godot_instance_destroy_func := (Object.simple_destructor'access, System.Null_Address, null);
-    get_message : godot_instance_method       := (Object.simple_get_message'access, System.Null_Address, null);
-    attributes  : godot_method_attributes     := (rpc_type => GODOT_METHOD_RPC_MODE_DISABLED);
+    create     : godot_instance_create_func  := (Object.simple_constructor'access, System.Null_Address, null);
+    destroy    : godot_instance_destroy_func := (Object.simple_destructor'access, System.Null_Address, null);
+    get_data   : godot_instance_method       := (Object.simple_get_data'access, System.Null_Address, null);
+    attributes : godot_method_attributes     := (rpc_type => GODOT_METHOD_RPC_MODE_DISABLED);
 
-    Simple_Str      : aliased IC.char_array := IC.To_C ("Simple");
-    Simple_Ptr      : ICS.chars_ptr := ICS.To_Chars_Ptr (Simple_Str'Unchecked_Access);
-    Reference_Str   : aliased IC.char_array := IC.To_C ("Reference");
-    Reference_Ptr   : ICS.chars_ptr := ICS.To_Chars_Ptr (Reference_Str'Unchecked_Access);
-    Get_Message_Str : aliased IC.char_array := IC.To_C ("get_message");
-    Get_Message_Ptr : ICS.chars_ptr := ICS.To_Chars_Ptr (Get_Message_Str'Unchecked_Access);
+    Simple_Ptr    : ICS.chars_ptr := ICS.New_String ("Simple");
+    Reference_Ptr : ICS.chars_ptr := ICS.New_String ("Reference");
+    Get_Data_Ptr  : ICS.chars_ptr := ICS.New_String ("get_data");
   begin
     Nativescript_Api.godot_nativescript_register_class (p_handle, Simple_Ptr, Reference_Ptr, create, destroy);
-    Nativescript_Api.godot_nativescript_register_method (p_handle, Simple_Ptr, Get_Message_Ptr, attributes, get_message);
+    Nativescript_Api.godot_nativescript_register_method (p_handle, Simple_Ptr, Get_Data_Ptr, attributes, get_data);
+    ICS.Free (Simple_Ptr); ICS.Free (Reference_Ptr); ICS.Free (Get_Data_Ptr);
   end;
 
   package body Object is
   
     type user_data_struct is record
-      counter : IC.int;
-      message : aliased godot_string;
+      data : aliased godot_string;
     end record;
 
     function simple_constructor (
@@ -60,16 +57,15 @@ package body Simple is
       p_method_data : System.Address)
       return System.Address
     is
-      raw_address : System.Address := Core_Api.godot_alloc (user_data_struct'Size);
+      p_user_data : System.Address := Core_Api.godot_alloc (user_data_struct'Size);
       user_data : user_data_struct;
-      for user_data'address use raw_address;
+      for user_data'address use p_user_data;
       pragma Import (C, user_data);
-      Message : IC.wchar_array := IC.To_C ("World from GDNative!");
+      data : IC.wchar_array := IC.To_C ("World from GDNative!");
     begin
-      user_data.counter := 0;
-      Core_Api.godot_string_new(user_data.message'access);
-      Core_Api.godot_string_new_with_wide_string (user_data.message'access, Message (Message'First)'access, Message'length);
-      return raw_address;
+      Core_Api.godot_string_new(user_data.data'access);
+      Core_Api.godot_string_new_with_wide_string (user_data.data'access, data (data'First)'access, data'length);
+      return p_user_data;
     end;
 
     procedure simple_destructor (
@@ -81,25 +77,25 @@ package body Simple is
       for user_data'address use p_user_data;
       pragma Import (C, user_data);
     begin
-      Core_Api.godot_string_destroy(user_data.message'access);
+      Core_Api.godot_string_destroy(user_data.data'access);
       Core_Api.godot_free (p_user_data);
     end;
-    
-    function simple_get_message (
+
+    function simple_get_data (
       p_instance    : System.Address;
       p_method_data : System.Address;
       p_user_data   : System.Address;
-      p_num_args    : IC.int; 
+      p_num_args    : IC.int;
       p_args        : System.Address)
       return godot_variant
     is
       user_data : user_data_struct;
       for user_data'address use p_user_data;
       pragma Import (C, user_data);
-      ret : aliased godot_variant;
+      variant : aliased godot_variant;
     begin
-      Core_Api.godot_variant_new_string (ret'access, user_data.message'access);
-      return ret;
+      Core_Api.godot_variant_new_string (variant'access, user_data.data'access);
+      return variant;
     end;
 
   end;

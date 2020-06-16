@@ -28,7 +28,7 @@ package body Minimal is
     for I in 1 .. Core_Api.num_extensions loop
       case Cursor.all.c_type is
         when GDNATIVE_EXT_NATIVESCRIPT =>
-          Nativescript_Api := To_godot_gdnative_ext_nativescript_api_struct (Cursor);
+          Nativescript_Api := To_godot_gdnative_ext_nativescript_api_struct (Cursor.all);
         when others => null;
       end case;
       GDnative_Api_Struct_Pointers.Increment (Cursor);

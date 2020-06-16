@@ -400,13 +400,13 @@ package GDNative is
    ------------------
 
    subtype godot_method_rpc_mode is IC.unsigned;
-   GODOT_METHOD_RPC_MODE_DISABLED : constant godot_method_rpc_mode := 0;
-   GODOT_METHOD_RPC_MODE_REMOTE : constant godot_method_rpc_mode := 1;
-   GODOT_METHOD_RPC_MODE_MASTER : constant godot_method_rpc_mode := 2;
-   GODOT_METHOD_RPC_MODE_PUPPET : constant godot_method_rpc_mode := 3;
-   GODOT_METHOD_RPC_MODE_SLAVE : constant godot_method_rpc_mode := 3;
+   GODOT_METHOD_RPC_MODE_DISABLED   : constant godot_method_rpc_mode := 0;
+   GODOT_METHOD_RPC_MODE_REMOTE     : constant godot_method_rpc_mode := 1;
+   GODOT_METHOD_RPC_MODE_MASTER     : constant godot_method_rpc_mode := 2;
+   GODOT_METHOD_RPC_MODE_PUPPET     : constant godot_method_rpc_mode := 3;
+   GODOT_METHOD_RPC_MODE_SLAVE      : constant godot_method_rpc_mode := 3;
    GODOT_METHOD_RPC_MODE_REMOTESYNC : constant godot_method_rpc_mode := 4;
-   GODOT_METHOD_RPC_MODE_SYNC : constant godot_method_rpc_mode := 4;
+   GODOT_METHOD_RPC_MODE_SYNC       : constant godot_method_rpc_mode := 4;
    GODOT_METHOD_RPC_MODE_MASTERSYNC : constant godot_method_rpc_mode := 5;
    GODOT_METHOD_RPC_MODE_PUPPETSYNC : constant godot_method_rpc_mode := 6;  -- ./nativescript/godot_nativescript.h:50
 
@@ -449,26 +449,26 @@ package GDNative is
    pragma Convention (C, godot_property_hint);  -- ./nativescript/godot_nativescript.h:88
 
    subtype godot_property_usage_flags is IC.unsigned;
-   GODOT_PROPERTY_USAGE_STORAGE : constant godot_property_usage_flags := 1;
-   GODOT_PROPERTY_USAGE_EDITOR : constant godot_property_usage_flags := 2;
-   GODOT_PROPERTY_USAGE_NETWORK : constant godot_property_usage_flags := 4;
-   GODOT_PROPERTY_USAGE_EDITOR_HELPER : constant godot_property_usage_flags := 8;
-   GODOT_PROPERTY_USAGE_CHECKABLE : constant godot_property_usage_flags := 16;
-   GODOT_PROPERTY_USAGE_CHECKED : constant godot_property_usage_flags := 32;
-   GODOT_PROPERTY_USAGE_INTERNATIONALIZED : constant godot_property_usage_flags := 64;
-   GODOT_PROPERTY_USAGE_GROUP : constant godot_property_usage_flags := 128;
-   GODOT_PROPERTY_USAGE_CATEGORY : constant godot_property_usage_flags := 256;
-   GODOT_PROPERTY_USAGE_STORE_IF_NONZERO : constant godot_property_usage_flags := 512;
-   GODOT_PROPERTY_USAGE_STORE_IF_NONONE : constant godot_property_usage_flags := 1024;
-   GODOT_PROPERTY_USAGE_NO_INSTANCE_STATE : constant godot_property_usage_flags := 2048;
-   GODOT_PROPERTY_USAGE_RESTART_IF_CHANGED : constant godot_property_usage_flags := 4096;
-   GODOT_PROPERTY_USAGE_SCRIPT_VARIABLE : constant godot_property_usage_flags := 8192;
-   GODOT_PROPERTY_USAGE_STORE_IF_NULL : constant godot_property_usage_flags := 16384;
-   GODOT_PROPERTY_USAGE_ANIMATE_AS_TRIGGER : constant godot_property_usage_flags := 32768;
+   GODOT_PROPERTY_USAGE_STORAGE                : constant godot_property_usage_flags := 1;
+   GODOT_PROPERTY_USAGE_EDITOR                 : constant godot_property_usage_flags := 2;
+   GODOT_PROPERTY_USAGE_NETWORK                : constant godot_property_usage_flags := 4;
+   GODOT_PROPERTY_USAGE_EDITOR_HELPER          : constant godot_property_usage_flags := 8;
+   GODOT_PROPERTY_USAGE_CHECKABLE              : constant godot_property_usage_flags := 16;
+   GODOT_PROPERTY_USAGE_CHECKED                : constant godot_property_usage_flags := 32;
+   GODOT_PROPERTY_USAGE_INTERNATIONALIZED      : constant godot_property_usage_flags := 64;
+   GODOT_PROPERTY_USAGE_GROUP                  : constant godot_property_usage_flags := 128;
+   GODOT_PROPERTY_USAGE_CATEGORY               : constant godot_property_usage_flags := 256;
+   GODOT_PROPERTY_USAGE_STORE_IF_NONZERO       : constant godot_property_usage_flags := 512;
+   GODOT_PROPERTY_USAGE_STORE_IF_NONONE        : constant godot_property_usage_flags := 1024;
+   GODOT_PROPERTY_USAGE_NO_INSTANCE_STATE      : constant godot_property_usage_flags := 2048;
+   GODOT_PROPERTY_USAGE_RESTART_IF_CHANGED     : constant godot_property_usage_flags := 4096;
+   GODOT_PROPERTY_USAGE_SCRIPT_VARIABLE        : constant godot_property_usage_flags := 8192;
+   GODOT_PROPERTY_USAGE_STORE_IF_NULL          : constant godot_property_usage_flags := 16384;
+   GODOT_PROPERTY_USAGE_ANIMATE_AS_TRIGGER     : constant godot_property_usage_flags := 32768;
    GODOT_PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED : constant godot_property_usage_flags := 65536;
-   GODOT_PROPERTY_USAGE_DEFAULT : constant godot_property_usage_flags := 7;
-   GODOT_PROPERTY_USAGE_DEFAULT_INTL : constant godot_property_usage_flags := 71;
-   GODOT_PROPERTY_USAGE_NOEDITOR : constant godot_property_usage_flags := 5;  -- ./nativescript/godot_nativescript.h:113
+   GODOT_PROPERTY_USAGE_DEFAULT                : constant godot_property_usage_flags := 7;
+   GODOT_PROPERTY_USAGE_DEFAULT_INTL           : constant godot_property_usage_flags := 71;
+   GODOT_PROPERTY_USAGE_NOEDITOR               : constant godot_property_usage_flags := 5;  -- ./nativescript/godot_nativescript.h:113
 
    type godot_property_attributes is record
       rset_type : aliased godot_method_rpc_mode;  -- ./nativescript/godot_nativescript.h:116
@@ -497,22 +497,6 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_instance_destroy_func);  -- ./nativescript/godot_nativescript.h:137
 
-   procedure godot_nativescript_register_class
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_base : ICS.chars_ptr;
-      p_create_func : godot_instance_create_func;
-      p_destroy_func : godot_instance_destroy_func);  -- ./nativescript/godot_nativescript.h:139
-   pragma Import (C, godot_nativescript_register_class, "godot_nativescript_register_class");
-
-   procedure godot_nativescript_register_tool_class
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_base : ICS.chars_ptr;
-      p_create_func : godot_instance_create_func;
-      p_destroy_func : godot_instance_destroy_func);  -- ./nativescript/godot_nativescript.h:141
-   pragma Import (C, godot_nativescript_register_tool_class, "godot_nativescript_register_tool_class");
-
    type godot_method_attributes is record
       rpc_type : aliased godot_method_rpc_mode;  -- ./nativescript/godot_nativescript.h:144
    end record;
@@ -529,14 +513,6 @@ package GDNative is
       free_func : access procedure (arg1 : System.Address);  -- ./nativescript/godot_nativescript.h:151
    end record;
    pragma Convention (C_Pass_By_Copy, godot_instance_method);  -- ./nativescript/godot_nativescript.h:152
-
-   procedure godot_nativescript_register_method
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_function_name : ICS.chars_ptr;
-      p_attr : godot_method_attributes;
-      p_method : godot_instance_method);  -- ./nativescript/godot_nativescript.h:154
-   pragma Import (C, godot_nativescript_register_method, "godot_nativescript_register_method");
 
    type godot_property_set_func is record
       set_func : access procedure
@@ -559,15 +535,6 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_property_get_func);  -- ./nativescript/godot_nativescript.h:168
 
-   procedure godot_nativescript_register_property
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_path : ICS.chars_ptr;
-      p_attr : access godot_property_attributes;
-      p_set_func : godot_property_set_func;
-      p_get_func : godot_property_get_func);  -- ./nativescript/godot_nativescript.h:170
-   pragma Import (C, godot_nativescript_register_property, "godot_nativescript_register_property");
-
    type godot_signal_argument is record
       name : aliased godot_string;  -- ./nativescript/godot_nativescript.h:173
       c_type : aliased godot_int;  -- ./nativescript/godot_nativescript.h:174
@@ -587,15 +554,6 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_signal);  -- ./nativescript/godot_nativescript.h:187
 
-   procedure godot_nativescript_register_signal
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_signal : access constant godot_signal);  -- ./nativescript/godot_nativescript.h:189
-   pragma Import (C, godot_nativescript_register_signal, "godot_nativescript_register_signal");
-
-   function godot_nativescript_get_userdata (p_instance : System.Address) return System.Address;  -- ./nativescript/godot_nativescript.h:191
-   pragma Import (C, godot_nativescript_get_userdata, "godot_nativescript_get_userdata");
-
    type godot_method_arg is record
       name : aliased godot_string;  -- ./nativescript/godot_nativescript.h:204
       c_type : aliased godot_variant_type;  -- ./nativescript/godot_nativescript.h:206
@@ -603,61 +561,6 @@ package GDNative is
       hint_string : aliased godot_string;  -- ./nativescript/godot_nativescript.h:208
    end record;
    pragma Convention (C_Pass_By_Copy, godot_method_arg);  -- ./nativescript/godot_nativescript.h:209
-
-   procedure godot_nativescript_set_method_argument_information
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_function_name : ICS.chars_ptr;
-      p_num_args : IC.int;
-      p_args : access constant godot_method_arg);  -- ./nativescript/godot_nativescript.h:211
-   pragma Import (C, godot_nativescript_set_method_argument_information, "godot_nativescript_set_method_argument_information");
-
-   procedure godot_nativescript_set_class_documentation
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_documentation : godot_string);  -- ./nativescript/godot_nativescript.h:215
-   pragma Import (C, godot_nativescript_set_class_documentation, "godot_nativescript_set_class_documentation");
-
-   procedure godot_nativescript_set_method_documentation
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_function_name : ICS.chars_ptr;
-      p_documentation : godot_string);  -- ./nativescript/godot_nativescript.h:216
-   pragma Import (C, godot_nativescript_set_method_documentation, "godot_nativescript_set_method_documentation");
-
-   procedure godot_nativescript_set_property_documentation
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_path : ICS.chars_ptr;
-      p_documentation : godot_string);  -- ./nativescript/godot_nativescript.h:217
-   pragma Import (C, godot_nativescript_set_property_documentation, "godot_nativescript_set_property_documentation");
-
-   procedure godot_nativescript_set_signal_documentation
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_signal_name : ICS.chars_ptr;
-      p_documentation : godot_string);  -- ./nativescript/godot_nativescript.h:218
-   pragma Import (C, godot_nativescript_set_signal_documentation, "godot_nativescript_set_signal_documentation");
-
-   procedure godot_nativescript_set_global_type_tag
-     (p_idx : IC.int;
-      p_name : ICS.chars_ptr;
-      p_type_tag : System.Address);  -- ./nativescript/godot_nativescript.h:222
-   pragma Import (C, godot_nativescript_set_global_type_tag, "godot_nativescript_set_global_type_tag");
-
-   function godot_nativescript_get_global_type_tag (p_idx : IC.int; p_name : ICS.chars_ptr) return System.Address;  -- ./nativescript/godot_nativescript.h:223
-   pragma Import (C, godot_nativescript_get_global_type_tag, "godot_nativescript_get_global_type_tag");
-
-   procedure godot_nativescript_set_type_tag
-     (p_gdnative_handle : System.Address;
-      p_name : ICS.chars_ptr;
-      p_type_tag : System.Address);  -- ./nativescript/godot_nativescript.h:225
-   pragma Import (C, godot_nativescript_set_type_tag, "godot_nativescript_set_type_tag");
-
-   function godot_nativescript_get_type_tag (p_object : System.Address) return System.Address;  -- ./nativescript/godot_nativescript.h:226
-   pragma Import (C, godot_nativescript_get_type_tag, "godot_nativescript_get_type_tag");
-
-   --  skipped anonymous struct anon_45
 
    type godot_instance_binding_functions is record
       alloc_instance_binding_data : access function
@@ -671,18 +574,6 @@ package GDNative is
       free_func : access procedure (arg1 : System.Address);  -- ./nativescript/godot_nativescript.h:236
    end record;
    pragma Convention (C_Pass_By_Copy, godot_instance_binding_functions);  -- ./nativescript/godot_nativescript.h:237
-
-   function godot_nativescript_register_instance_binding_data_functions (p_binding_functions : godot_instance_binding_functions) return IC.int;  -- ./nativescript/godot_nativescript.h:239
-   pragma Import (C, godot_nativescript_register_instance_binding_data_functions, "godot_nativescript_register_instance_binding_data_functions");
-
-   procedure godot_nativescript_unregister_instance_binding_data_functions (p_idx : IC.int);  -- ./nativescript/godot_nativescript.h:240
-   pragma Import (C, godot_nativescript_unregister_instance_binding_data_functions, "godot_nativescript_unregister_instance_binding_data_functions");
-
-   function godot_nativescript_get_instance_binding_data (p_idx : IC.int; p_object : System.Address) return System.Address;  -- ./nativescript/godot_nativescript.h:242
-   pragma Import (C, godot_nativescript_get_instance_binding_data, "godot_nativescript_get_instance_binding_data");
-
-   procedure godot_nativescript_profiling_add_data (p_signature : ICS.chars_ptr; p_time : ICE.long_long);  -- ./nativescript/godot_nativescript.h:244
-   pragma Import (C, godot_nativescript_profiling_add_data, "godot_nativescript_profiling_add_data");
 
    ------------------
    -- GDNATIVE_API --
@@ -722,7 +613,7 @@ package GDNative is
    --  }
 
    type godot_gdnative_ext_nativescript_1_1_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:56
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:56
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:57
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:58
       godot_nativescript_set_method_argument_information : access procedure
@@ -768,7 +659,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_nativescript_1_1_api_struct);  -- gdnative_api_struct.gen.h:55
 
    type godot_gdnative_ext_nativescript_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:75
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:75
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:76
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:77
       godot_nativescript_register_class : access procedure
@@ -803,10 +694,14 @@ package GDNative is
       godot_nativescript_get_userdata : access function (arg1 : System.Address) return System.Address;  -- gdnative_api_struct.gen.h:83
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_nativescript_api_struct);  -- gdnative_api_struct.gen.h:74
-   type godot_gdnative_ext_nativescript_api_struct_ptr is access all godot_gdnative_ext_nativescript_api_struct;
+   
+   type godot_gdnative_ext_nativescript_api_struct_ptr is access constant godot_gdnative_ext_nativescript_api_struct;
+   pragma Convention (C, godot_gdnative_ext_nativescript_api_struct_ptr);
 
+   function To_godot_gdnative_ext_nativescript_api_struct is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_nativescript_api_struct_ptr);
+   
    type godot_gdnative_ext_pluginscript_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:87
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:87
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:88
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:89
       godot_pluginscript_register_language : access procedure (arg1 : access IC.int);  -- gdnative_api_struct.gen.h:90
@@ -814,7 +709,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_pluginscript_api_struct);  -- gdnative_api_struct.gen.h:86
 
    type godot_gdnative_ext_android_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:94
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:94
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:95
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:96
       godot_android_is_activity_resumed : access function return ICE.bool;  -- gdnative_api_struct.gen.h:100
@@ -822,7 +717,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_android_api_struct);  -- gdnative_api_struct.gen.h:93
 
    type godot_gdnative_ext_arvr_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:104
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:104
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:105
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:106
       godot_arvr_register_interface : access procedure (arg1 : access IC.int);  -- gdnative_api_struct.gen.h:107
@@ -858,7 +753,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_arvr_api_struct);  -- gdnative_api_struct.gen.h:103
 
    type godot_gdnative_ext_videodecoder_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:121
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:121
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:122
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:123
       godot_videodecoder_file_read : access function
@@ -874,7 +769,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_videodecoder_api_struct);  -- gdnative_api_struct.gen.h:120
 
    type godot_gdnative_ext_net_3_2_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:130
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:130
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:131
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:132
       godot_net_set_webrtc_library : access function (arg1 : access IC.int) return godot_error;  -- gdnative_api_struct.gen.h:133
@@ -884,7 +779,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_net_3_2_api_struct);  -- gdnative_api_struct.gen.h:129
 
    type godot_gdnative_ext_net_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:139
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:139
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:140
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:141
       godot_net_bind_stream_peer : access procedure (arg1 : System.Address; arg2 : access IC.int);  -- gdnative_api_struct.gen.h:142
@@ -894,7 +789,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_net_api_struct);  -- gdnative_api_struct.gen.h:138
 
    type godot_gdnative_core_1_2_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:148
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:148
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:149
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:150
       godot_dictionary_duplicate : access function (arg1 : access constant godot_dictionary; arg2 : godot_bool) return godot_dictionary;  -- gdnative_api_struct.gen.h:151
@@ -938,7 +833,7 @@ package GDNative is
    pragma Convention (C_Pass_By_Copy, godot_gdnative_core_1_2_api_struct);  -- gdnative_api_struct.gen.h:147
 
    type godot_gdnative_core_1_1_api_struct is record
-      c_type : aliased IC.unsigned;  -- gdnative_api_struct.gen.h:172
+      c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:172
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:173
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:174
       godot_color_to_abgr32 : access function (arg1 : access constant godot_color) return godot_int;  -- gdnative_api_struct.gen.h:175
@@ -2070,8 +1965,6 @@ package GDNative is
       godot_print : access procedure (arg1 : access constant godot_string);  -- gdnative_api_struct.gen.h:961
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_core_api_struct);  -- gdnative_api_struct.gen.h:212
-
-   function To_godot_gdnative_ext_nativescript_api_struct is new Ada.Unchecked_Conversion (GDnative_Api_Struct_Pointers.Pointer, godot_gdnative_ext_nativescript_api_struct_ptr);
 
 -------
 private

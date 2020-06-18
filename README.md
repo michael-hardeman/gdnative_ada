@@ -1,2 +1,3 @@
 # gdnative_ada
-godot nativescript bindings in ada
+
+Godot NativeScript bindings for the Ada programming language

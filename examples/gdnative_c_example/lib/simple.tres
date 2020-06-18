@@ -2,5 +2,9 @@
 
 [resource]
 symbol_prefix = "godot_"
+entry/OSX.64 = "res://lib/libsimple.dylib"
 entry/Windows.64 = "res://lib/libsimple.dll"
+entry/X11.64 = "res://lib/libsimple.so"
+dependency/OSX.64 = [  ]
 dependency/Windows.64 = [  ]
+dependency/X11.64 = [  ]

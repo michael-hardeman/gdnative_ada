@@ -1,6 +1,8 @@
 with Interfaces.C;
 with Interfaces.C.Strings;
 
+with Ada.Exceptions;
+
 package body Simple is
 
   package IC renames Interfaces.C;
@@ -24,6 +26,14 @@ package body Simple is
       end case;
       GDnative_Api_Struct_Pointers.Increment (Cursor);
     end loop;
+  exception
+    when Error: others =>
+      declare
+        C_Error_Info : ICS.chars_ptr := ICS.New_String (Ada.Exceptions.Exception_Information (Error));
+      begin
+        p_options.report_loading_error (p_options.gd_native_library, C_Error_Info);
+        ICS.Free (C_Error_Info);
+      end;
   end;
 
   procedure godot_gdnative_terminate (p_options : access godot_gdnative_terminate_options) is begin

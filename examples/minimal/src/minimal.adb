@@ -1,10 +1,8 @@
 with Interfaces.C;
-with Interfaces.C.Strings;
 
 package body Minimal is
 
   package IC renames Interfaces.C;
-  package ICS renames Interfaces.C.Strings;
   
   use all type gdnative.GDNATIVE_API_TYPES;
 

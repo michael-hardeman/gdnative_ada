@@ -1,0 +1,6 @@
+[gd_resource type="GDNativeLibrary" format=2]
+
+[resource]
+symbol_prefix = "tetris_"
+entry/Windows.64 = "res://lib/libtetris.dll"
+dependency/Windows.64 = [  ]

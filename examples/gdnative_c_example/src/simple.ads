@@ -36,7 +36,7 @@ private
       p_method_data : System.Address;
       p_user_data   : System.Address;
       p_num_args    : Interfaces.C.int;
-      p_args        : System.Address) -- godot_variant **
+      p_args        : Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
       return godot_variant;
     pragma Convention(C, simple_get_data);
 

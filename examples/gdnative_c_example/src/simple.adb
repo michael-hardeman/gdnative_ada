@@ -96,7 +96,7 @@ package body Simple is
       p_method_data : System.Address;
       p_user_data   : System.Address;
       p_num_args    : IC.int;
-      p_args        : System.Address)
+      p_args        : Godot_Instance_Method_Args_Ptrs.Pointer)
       return godot_variant
     is
       user_data : user_data_struct;

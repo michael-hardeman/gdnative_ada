@@ -59,6 +59,7 @@ package GDNative is
    type godot_transform2d is private;
    type godot_transform is private;
    type godot_variant is private;
+   type godot_variant_ptr is access all godot_variant;
    type godot_vector2 is private;
    type godot_vector3 is private;
    type godot_pool_array_write_access is private;
@@ -502,13 +503,21 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_method_attributes);  -- ./nativescript/godot_nativescript.h:145
 
+   type godot_variant_ptr_array is array (IC.unsigned range <>) of aliased godot_variant_ptr;
+
+   package Godot_Instance_Method_Args_Ptrs is new Interfaces.C.Pointers (
+      Index => IC.unsigned, 
+      Element => godot_variant_ptr,
+      Element_Array => godot_variant_ptr_array,
+      Default_Terminator => null);
+
    type godot_instance_method is record
       method : access function
            (arg1 : System.Address;
             arg2 : System.Address;
             arg3 : System.Address;
             arg4 : IC.int;
-            arg5 : System.Address) return godot_variant;  -- ./nativescript/godot_nativescript.h:149
+            arg5 : Godot_Instance_Method_Args_Ptrs.Pointer) return godot_variant;  -- ./nativescript/godot_nativescript.h:149
       method_data : System.Address;  -- ./nativescript/godot_nativescript.h:150
       free_func : access procedure (arg1 : System.Address);  -- ./nativescript/godot_nativescript.h:151
    end record;
@@ -658,6 +667,9 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_nativescript_1_1_api_struct);  -- gdnative_api_struct.gen.h:55
 
+   ----------------------
+   -- Nativescript API --
+   ----------------------
    type godot_gdnative_ext_nativescript_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:75
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:76
@@ -695,11 +707,13 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_nativescript_api_struct);  -- gdnative_api_struct.gen.h:74
    
-   type godot_gdnative_ext_nativescript_api_struct_ptr is access constant godot_gdnative_ext_nativescript_api_struct;
-   pragma Convention (C, godot_gdnative_ext_nativescript_api_struct_ptr);
-
-   function To_godot_gdnative_ext_nativescript_api_struct is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_nativescript_api_struct_ptr);
+   type godot_gdnative_ext_nativescript_api_struct_ptr is access constant godot_gdnative_ext_nativescript_api_struct with Convention => C;
    
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_nativescript_api_struct_ptr);
+   
+   -----------------------
+   -- PluginScript API  --
+   -----------------------
    type godot_gdnative_ext_pluginscript_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:87
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:88
@@ -708,6 +722,13 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_pluginscript_api_struct);  -- gdnative_api_struct.gen.h:86
 
+   type godot_gdnative_ext_pluginscript_api_struct_ptr is access constant godot_gdnative_ext_pluginscript_api_struct with Convention => C;
+
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_pluginscript_api_struct_ptr);
+
+   ------------------
+   -- Android API  --
+   ------------------
    type godot_gdnative_ext_android_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:94
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:95
@@ -716,6 +737,12 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_android_api_struct);  -- gdnative_api_struct.gen.h:93
 
+   type godot_gdnative_ext_android_api_struct_ptr is access constant godot_gdnative_ext_android_api_struct with Convention => C;
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_android_api_struct_ptr);
+
+   --------------
+   -- ARVR API --
+   --------------
    type godot_gdnative_ext_arvr_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:104
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:105
@@ -752,6 +779,12 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_arvr_api_struct);  -- gdnative_api_struct.gen.h:103
 
+   type godot_gdnative_ext_arvr_api_struct_ptr is access constant godot_gdnative_ext_arvr_api_struct with Convention => C;
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_arvr_api_struct_ptr);
+
+   ----------------------
+   -- Videodecoder API --
+   ----------------------
    type godot_gdnative_ext_videodecoder_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:121
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:122
@@ -768,6 +801,10 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_videodecoder_api_struct);  -- gdnative_api_struct.gen.h:120
 
+   type godot_gdnative_ext_android_api_struct_ptr is access constant godot_gdnative_ext_android_api_struct with Convention => C;
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_android_api_struct_ptr);
+
+
    type godot_gdnative_ext_net_3_2_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:130
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:131
@@ -778,6 +815,9 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_net_3_2_api_struct);  -- gdnative_api_struct.gen.h:129
 
+   -------------
+   -- Net API --
+   -------------
    type godot_gdnative_ext_net_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:139
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:140
@@ -787,6 +827,10 @@ package GDNative is
       godot_net_bind_multiplayer_peer : access procedure (arg1 : System.Address; arg2 : access IC.int);  -- gdnative_api_struct.gen.h:144
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_net_api_struct);  -- gdnative_api_struct.gen.h:138
+
+   type godot_gdnative_ext_net_api_struct_ptr is access constant godot_gdnative_ext_net_api_struct with Convention => C;
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_net_api_struct_ptr);
+
 
    type godot_gdnative_core_1_2_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:148

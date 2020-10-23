@@ -9,7 +9,7 @@ package Minimal is
   procedure GDNative_Finalize (p_options : access godot_gdnative_terminate_options)
     with Export => True, Convention => C, External_Name => "minimal_gdnative_terminate";
 
-  procedure Nativescript_Initialize (p_handle : System.Address)
+  procedure Nativescript_Initialize (p_handle : Nativescript_Handle)
     with Export => True, Convention => C, External_Name => "minimal_nativescript_init";
 
 end;

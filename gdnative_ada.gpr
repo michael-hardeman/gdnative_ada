@@ -4,5 +4,5 @@ library project GDNative_Ada is
   for Library_Dir       use "lib";
   for Library_Name      use "gdnative_ada";
   for Library_Kind      use "static";
-  for Library_Interface use ("GDNative");
+  for Library_Interface use ("GDNative", "GDNative.Thick");
 end GDNative_Ada;

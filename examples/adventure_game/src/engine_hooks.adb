@@ -1,34 +1,29 @@
-with Interfaces.C;
-with Interfaces.C.Strings;
-
-with Ada.Exceptions;
-
-with Example_Object;
 with GDNative.Thick; use GDNative.Thick;
+
+with Adventure;
 
 package body Engine_Hooks is
 
-  Context : GDNative_Context;
+  procedure On_GDNative_Init (p_options : access godot_gdnative_init_options) is begin
+    Initialize_GDNative (p_options);
 
-  procedure On_GDNative_Init (p_options : access godot_gdnative_init_options) is 
-    Intialize (Context, p_options);
-
-    Put (Context, "GDNative Initialized!");
+    Put ("GDNative Initialized!");
   end;
 
   procedure On_GDNative_Terminate (p_options : access godot_gdnative_terminate_options) is begin
-    Put (Context, "GDNative Finalized!");
+    Put ("GDNative Finalized!");
 
-    Finalize (Context);
+    Finalize_GDNative (p_options);
   end;
 
-  procedure On_Nativescript_Init (p_handle : System.Address) is begin
-    Put (Context, "Nativescript Initialzing");
+  procedure On_Nativescript_Init (p_handle : Nativescript_Handle) is begin
+    Put ("Nativescript Initialzing");
 
-    Initialize_Nativescript (Context, p_handle);
-    Example_Object.Register (Context);
+    Initialize_Nativescript (p_handle);
 
-    Put (Context, "Nativescript Initialized!");
+    Adventure.Register_Classes;
+
+    Put ("Nativescript Initialized!");
   end;
   
 end;

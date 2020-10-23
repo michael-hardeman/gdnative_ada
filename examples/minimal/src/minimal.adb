@@ -6,8 +6,8 @@ package body Minimal is
   
   use all type gdnative.GDNATIVE_API_TYPES;
 
-  Core_Api         : access constant godot_gdnative_core_api_struct;
-  Nativescript_Api : access constant godot_gdnative_ext_nativescript_api_struct;
+  Core_Api         : godot_gdnative_core_api_struct_ptr;
+  Nativescript_Api : access godot_gdnative_ext_nativescript_api_struct;
 
   procedure Godot_Print (Item : in Wide_String) is 
     C_Item     : IC.wchar_array := IC.To_C (Item);
@@ -42,7 +42,7 @@ package body Minimal is
     Nativescript_Api := null;
   end;
 
-  procedure Nativescript_Initialize (p_handle : System.Address) is begin
+  procedure Nativescript_Initialize (p_handle : Nativescript_Handle) is begin
     Godot_Print ("NativeScript Initialized");
   end;
   

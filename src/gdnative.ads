@@ -304,6 +304,7 @@ package GDNative is
       Default_Terminator => null);
 
    type godot_gdnative_core_api_struct;
+   type godot_gdnative_core_api_struct_ptr is access all godot_gdnative_core_api_struct;
    type godot_gdnative_init_options is record
       in_editor : aliased godot_bool;  -- ../gdnative/gdnative.h:243
       core_api_hash : aliased ICE.long_long;  -- ../gdnative/gdnative.h:244
@@ -316,10 +317,11 @@ package GDNative is
             arg4 : godot_gdnative_api_version);  -- ../gdnative/gdnative.h:247
       report_loading_error : access procedure (arg1 : System.Address; arg2 : ICS.chars_ptr);  -- ../gdnative/gdnative.h:248
       gd_native_library : System.Address;  -- ../gdnative/gdnative.h:249
-      api_struct : access constant godot_gdnative_core_api_struct;  -- ../gdnative/gdnative.h:250
+      api_struct : godot_gdnative_core_api_struct_ptr;  -- ../gdnative/gdnative.h:250
       active_library_path : godot_string;  -- ../gdnative/gdnative.h:251
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_init_options);  -- ../gdnative/gdnative.h:252
+
 
    type godot_gdnative_terminate_options is record
       in_editor : aliased godot_bool;  -- ../gdnative/gdnative.h:255
@@ -670,37 +672,40 @@ package GDNative is
    ----------------------
    -- Nativescript API --
    ----------------------
+   type Nativescript_Handle is new System.Address;
+   NULL_HANDLE : constant Nativescript_Handle := Nativescript_Handle (System.Null_Address);
+
    type godot_gdnative_ext_nativescript_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:75
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:76
       next : access constant godot_gdnative_api_struct;  -- gdnative_api_struct.gen.h:77
       godot_nativescript_register_class : access procedure
-           (arg1 : System.Address;
+           (arg1 : Nativescript_Handle;
             arg2 : ICS.chars_ptr;
             arg3 : ICS.chars_ptr;
             arg4 : godot_instance_create_func;
             arg5 : godot_instance_destroy_func);  -- gdnative_api_struct.gen.h:78
       godot_nativescript_register_tool_class : access procedure
-           (arg1 : System.Address;
+           (arg1 : Nativescript_Handle;
             arg2 : ICS.chars_ptr;
             arg3 : ICS.chars_ptr;
             arg4 : godot_instance_create_func;
             arg5 : godot_instance_destroy_func);  -- gdnative_api_struct.gen.h:79
       godot_nativescript_register_method : access procedure
-           (arg1 : System.Address;
+           (arg1 : Nativescript_Handle;
             arg2 : ICS.chars_ptr;
             arg3 : ICS.chars_ptr;
             arg4 : godot_method_attributes;
             arg5 : godot_instance_method);  -- gdnative_api_struct.gen.h:80
       godot_nativescript_register_property : access procedure
-           (arg1 : System.Address;
+           (arg1 : Nativescript_Handle;
             arg2 : ICS.chars_ptr;
             arg3 : ICS.chars_ptr;
             arg4 : access godot_property_attributes;
             arg5 : godot_property_set_func;
             arg6 : godot_property_get_func);  -- gdnative_api_struct.gen.h:81
       godot_nativescript_register_signal : access procedure
-           (arg1 : System.Address;
+           (arg1 : Nativescript_Handle;
             arg2 : ICS.chars_ptr;
             arg3 : access constant godot_signal);  -- gdnative_api_struct.gen.h:82
       godot_nativescript_get_userdata : access function (arg1 : System.Address) return System.Address;  -- gdnative_api_struct.gen.h:83
@@ -801,8 +806,8 @@ package GDNative is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_ext_videodecoder_api_struct);  -- gdnative_api_struct.gen.h:120
 
-   type godot_gdnative_ext_android_api_struct_ptr is access constant godot_gdnative_ext_android_api_struct with Convention => C;
-   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_android_api_struct_ptr);
+   type godot_gdnative_ext_videodecoder_api_struct_ptr is access constant godot_gdnative_ext_videodecoder_api_struct with Convention => C;
+   function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_videodecoder_api_struct_ptr);
 
 
    type godot_gdnative_ext_net_3_2_api_struct is record

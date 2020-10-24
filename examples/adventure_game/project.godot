@@ -16,5 +16,5 @@ _global_script_class_icons={
 [application]
 
 config/name="Adventure Game"
-run/main_scene="res://test.tscn"
+run/main_scene="res://main.tscn"
 config/icon="res://icon.png"

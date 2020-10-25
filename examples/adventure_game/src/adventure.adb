@@ -1,3 +1,5 @@
+with GDNative.Thick.Console; use GDNative.Thick.Console;
+
 package body Adventure is
 
   overriding procedure Process (Item : in Player; Delta_Time : in Long_Float) is begin

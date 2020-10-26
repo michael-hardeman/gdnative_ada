@@ -23,7 +23,7 @@ package GDNative.Thick.Objects is
   ----------
   type Node is abstract new Object with null record;
   function Constructor (Parameters : not null access No_Parameters) return Node is abstract;
-  procedure Process (Item : in Node; Delta_Time : in Long_Float) is null;
+  procedure Process (Item : in out Node; Delta_Time : in Long_Float) is null;
 
 
   -------------------------

@@ -36,7 +36,6 @@ package body GDNative.Thick.Objects is
       Addr            : S.Address           := Core_Api.godot_alloc (IC.int (T'size));
       Access_Instance : Cast.Object_Pointer := Cast.To_Pointer (Addr);
     begin
-      Console.Put ("Create");
       Access_Instance.all := T (Construct (T'tag, NO_PARAMS'access));
       return Addr;
     exception
@@ -50,7 +49,6 @@ package body GDNative.Thick.Objects is
       p_method_data : S.Address;
       p_user_data   : S.Address)
     is begin
-      Console.Put ("Destroy");
       Core_Api.godot_free (p_user_data);
     exception
       when Occurrence : others => Exceptions.Put_Error (Occurrence);

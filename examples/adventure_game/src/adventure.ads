@@ -9,7 +9,7 @@ package Adventure is
   end record;
   for Player'External_Tag use "Player";
   overriding function Constructor (Parameters : not null access No_Parameters) return Player is (Player'(Health => 100));
-  overriding procedure Process (Item : in Player; Delta_Time : in Long_Float);
+  overriding procedure Process (Item : in out Player; Delta_Time : in Long_Float);
 
   package Player_Class_Registration is new Object_Registration (T => Player);
   package Player_Node_Registration  is new Node_Registration (T => Player);

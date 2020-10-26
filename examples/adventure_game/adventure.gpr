@@ -1,0 +1,14 @@
+with "../../gdnative_ada.gpr";
+
+library project Adventure is
+  for Library_Name use "adventure";
+  for Library_Kind use "dynamic";
+  for Library_Interface use ("Engine_Hooks");
+  for Library_Standalone use "encapsulated";
+  for Object_Dir   use "obj";
+  for Source_Dirs  use ("src");
+  for Library_Dir  use "lib";
+
+  package Compiler renames GDNative_Ada.Compiler;
+  
+end Adventure;

@@ -1,0 +1,6 @@
+[gd_resource type="GDNativeLibrary" format=2]
+
+[resource]
+symbol_prefix = "adventure_"
+entry/Windows.64 = "res://lib/libadventure.dll"
+dependency/Windows.64 = [  ]

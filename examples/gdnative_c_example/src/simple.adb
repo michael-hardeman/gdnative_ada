@@ -10,8 +10,8 @@ package body Simple is
   
   use all type gdnative.GDNATIVE_API_TYPES;
 
-  Core_Api         : access constant godot_gdnative_core_api_struct;
-  Nativescript_Api : access constant godot_gdnative_ext_nativescript_api_struct;
+  Core_Api         : godot_gdnative_core_api_struct;
+  Nativescript_Api : access godot_gdnative_ext_nativescript_api_struct;
 
   procedure godot_gdnative_init (p_options : access godot_gdnative_init_options) is 
     Cursor : GDnative_Api_Struct_Pointers.Pointer;
@@ -41,7 +41,7 @@ package body Simple is
     Nativescript_Api := null;
   end;
 
-  procedure godot_nativescript_init (p_handle : System.Address) is 
+  procedure godot_nativescript_init (p_handle : Nativescript_Handle) is 
     create     : godot_instance_create_func  := (Object.simple_constructor'access, System.Null_Address, null);
     destroy    : godot_instance_destroy_func := (Object.simple_destructor'access, System.Null_Address, null);
     get_data   : godot_instance_method       := (Object.simple_get_data'access, System.Null_Address, null);
@@ -96,7 +96,7 @@ package body Simple is
       p_method_data : System.Address;
       p_user_data   : System.Address;
       p_num_args    : IC.int;
-      p_args        : System.Address)
+      p_args        : Godot_Instance_Method_Args_Ptrs.Pointer)
       return godot_variant
     is
       user_data : user_data_struct;

@@ -10,7 +10,7 @@ package Simple is
   procedure godot_gdnative_terminate (p_options : access godot_gdnative_terminate_options)
     with Export => True, Convention => C, External_Name => "godot_gdnative_terminate";
 
-  procedure godot_nativescript_init (p_handle : System.Address)
+  procedure godot_nativescript_init (p_handle : Nativescript_Handle)
     with Export => True, Convention => C, External_Name => "godot_nativescript_init";
 
 -------
@@ -36,7 +36,7 @@ private
       p_method_data : System.Address;
       p_user_data   : System.Address;
       p_num_args    : Interfaces.C.int;
-      p_args        : System.Address) -- godot_variant **
+      p_args        : Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
       return godot_variant;
     pragma Convention(C, simple_get_data);
 

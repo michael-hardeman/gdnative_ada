@@ -1,4 +1,5 @@
 with GDNative.Thick.Console; use GDNative.Thick.Console;
+with GDNative.Thick.Exceptions; use GDNative.Thick.Exceptions;
 
 package body Adventure is
 
@@ -9,6 +10,8 @@ package body Adventure is
   procedure Register_Classes is begin
     Player_Class_Registration.Register_Class;
     Player_Node_Registration.Register_Process;
+  exception
+    when Occurrence : others => Exceptions.Put_Error (Occurrence);
   end;
 
 end;

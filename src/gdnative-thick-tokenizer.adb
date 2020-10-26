@@ -47,40 +47,55 @@ package body GDNative.Thick.Tokenizer is
   end;
 
   -------------------------
-  -- At Separator Or End --
+  -- At Indicator Or End --
   -------------------------
-  function At_Separator_Or_End (State : Tokenizer_State) return Boolean is begin 
+  function At_Indicator_Or_End (State : Tokenizer_State; Indicators : Character_Array) return Boolean is begin
     return State.Current_Offset >= State.Input'length or
-      (for some Separator of State.Separators => Separator = State.Current);
+      (for some Indicator of Indicators => Indicator = State.Current);
   end;
 
-  ---------------------
-  -- At Token Or End --
-  ---------------------
-  function At_Token_Or_End (State : Tokenizer_State) return Boolean is begin 
+  --------------------------
+  -- Not Indicator Or End --
+  --------------------------
+  function Not_Indicator_Or_End (State : Tokenizer_State; Indicators : Character_Array) return Boolean is begin
     return State.Current_Offset >= State.Input'length or
-      (for all Separator of State.Separators => Separator /= State.Current);
+      (for all Indicator of Indicators => Indicator /= State.Current);
   end;
 
-  ---------------------
-  -- Skip Until Next --
-  ---------------------
-  procedure Skip_Until_Next (State : in out Tokenizer_State) is begin
+  ----------------
+  -- Skip Until --
+  ----------------
+  procedure Skip_Until (State : in out Tokenizer_State; Indicators : Character_Array) is begin
     loop
-      exit when At_Token_Or_End (State);
+      exit when At_Indicator_Or_End (State, Indicators);
       Next (State);
     end loop;
+  end;
+
+  --------------------
+  -- Skip Until Not --
+  --------------------
+  procedure Skip_Until_Not (State : in out Tokenizer_State; Indicators : Character_Array) is begin
+    loop
+      exit when Not_Indicator_Or_End (State, Indicators);
+      Next (State);
+    end loop;
+  end;
+
+  ---------------
+  -- Skip Line --
+  ---------------
+  procedure Skip_Line (State : in out Tokenizer_State) is begin
+    Skip_Until     (State, (ASCII.CR, ASCII.LF)); 
+    Skip_Until_Not (State, (ASCII.CR, ASCII.LF));
   end;
 
   ----------
   -- Skip --
   ----------
   procedure Skip (State : in out Tokenizer_State) is begin
-    loop
-      exit when At_Separator_Or_End (State);
-      Next (State);
-    end loop;
-    Skip_Until_Next (State);
+    Skip_Until     (State, State.Separators);
+    Skip_Until_Not (State, State.Separators);
   end;
 
   -----------------
@@ -89,11 +104,11 @@ package body GDNative.Thick.Tokenizer is
   function Read_String (State : in out Tokenizer_State) return String is begin
     Start (State);
     loop
-      exit when At_Separator_Or_End (State);
+      exit when At_Indicator_Or_End (State, State.Separators);
       Next (State);
     end loop;
     Stop (State);
-    Skip_Until_Next (State);
+    Skip_Until_Not (State, State.Separators);
     return Read (State);
   end;
 

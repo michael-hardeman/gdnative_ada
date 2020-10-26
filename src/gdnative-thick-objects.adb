@@ -5,17 +5,23 @@ with System.Address_To_Access_Conversions;
 with Interfaces.C;
 with Interfaces.C.Strings;
 
-With Ada.Tags;
+with Ada.Tags;
 with Ada.Tags.Generic_Dispatching_Constructor;
+with Ada.Exceptions;
 
 with GDNative.Thick.Console;
+with GDNative.Thick.Exceptions;
 
 package body GDNative.Thick.Objects is
 
-  package S renames System;
-  package IC renames Interfaces.C;
+  package S   renames System;
+  package IC  renames Interfaces.C;
   package ICS renames Interfaces.C.Strings;
+  package AE  renames Ada.Exceptions;
 
+  -------------------------
+  -- Object Registration --
+  -------------------------
   package body Object_Registration is
 
     NO_PARAMS : aliased No_Parameters;
@@ -27,11 +33,16 @@ package body GDNative.Thick.Objects is
       p_method_data : S.Address)
       return S.Address
     is
-      Addr : S.Address := Core_Api.godot_alloc (IC.int (T'size));
+      Addr            : S.Address           := Core_Api.godot_alloc (IC.int (T'size));
       Access_Instance : Cast.Object_Pointer := Cast.To_Pointer (Addr);
     begin
+      Console.Put ("Create");
       Access_Instance.all := T (Construct (T'tag, NO_PARAMS'access));
       return Addr;
+    exception
+      when Occurrence : others =>
+        Exceptions.Put_Error (Occurrence);
+        return S.Null_Address;
     end;
 
     procedure Destroy (
@@ -39,7 +50,10 @@ package body GDNative.Thick.Objects is
       p_method_data : S.Address;
       p_user_data   : S.Address)
     is begin
+      Console.Put ("Destroy");
       Core_Api.godot_free (p_user_data);
+    exception
+      when Occurrence : others => Exceptions.Put_Error (Occurrence);
     end;
 
     --------------------
@@ -49,14 +63,12 @@ package body GDNative.Thick.Objects is
       Create_Func  : godot_instance_create_func  := (Create'access, S.Null_Address, null);
       Destroy_Func : godot_instance_destroy_func := (Destroy'access, S.Null_Address, null);
      
-      Name_Ptr : ICS.chars_ptr := ICS.New_String (Ada.Tags.Expanded_Name (T'Tag));
-
-      -- I honestly don't know what this is for
+      Name_Ptr      : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (T'Tag));
       Reference_Ptr : ICS.chars_ptr := ICS.New_String ("Reference");
     begin
       Assert_Nativescript_Initalized;
 
-      Console.Put ("Registering_Class: " & To_Wide (Ada.Tags.Expanded_Name (T'Tag)));
+      Console.Put ("Registering Class: " & To_Wide (Ada.Tags.External_Tag (T'Tag)));
 
       Nativescript_Api.godot_nativescript_register_class (
         Nativescript_Ptr, 
@@ -64,11 +76,17 @@ package body GDNative.Thick.Objects is
         Reference_Ptr,
         Create_Func, 
         Destroy_Func);
-      ICS.Free (Name_Ptr); ICS.Free (Reference_Ptr);
+      ICS.Free (Name_Ptr); 
+      ICS.Free (Reference_Ptr);
+    exception
+      when Occurrence : others => Exceptions.Put_Error (Occurrence);
     end;
 
   end;
 
+  -----------------------
+  -- Node Registration --
+  -----------------------
   package body Node_Registration is
 
     NO_PARAMS : aliased No_Parameters;
@@ -83,27 +101,30 @@ package body GDNative.Thick.Objects is
       p_args        : Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
       return GDNative.godot_variant
     is
-      Result   : aliased godot_variant;
       Access_Instance : Cast.Object_Pointer := Cast.To_Pointer (p_user_data);
-      Time_Elapsed : IC.double := Core_Api.godot_variant_as_real (p_args.all);
+      Time_Elapsed    : IC.double           := Core_Api.godot_variant_as_real (p_args.all);
     begin
       Process (Access_Instance.all, Long_Float (Time_Elapsed));
-
-      Core_Api.godot_variant_new_nil (Result'access);
-      return Result;
+      return Nil_Godot_Variant;
+    exception
+      when Occurrence : others => 
+        Exceptions.Put_Error (Occurrence);
+        return Nil_Godot_Variant;
     end;
 
     ----------------------
     -- Register Process --
     ----------------------
     procedure Register_Process is
-      Process_Ptr  : ICS.chars_ptr := ICS.New_String ("_process");
       Process_Func : godot_instance_method   := (Process'access, S.Null_Address, null);
       Process_Attr : godot_method_attributes := (rpc_type => GODOT_METHOD_RPC_MODE_DISABLED);
 
-      Name_Ptr : ICS.chars_ptr := ICS.New_String (Ada.Tags.Expanded_Name (T'tag));
+      Name_Ptr    : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (T'tag));
+      Process_Ptr : ICS.chars_ptr := ICS.New_String ("_process");
     begin
       Assert_Nativescript_Initalized;
+
+      Console.Put ("Registering Method: " & To_Wide (Ada.Tags.External_Tag (T'Tag)) & "._process");
 
       Nativescript_Api.godot_nativescript_register_method (
         Nativescript_Ptr,
@@ -112,6 +133,9 @@ package body GDNative.Thick.Objects is
         Process_Attr, 
         Process_Func);
       ICS.Free (Name_Ptr);
+      ICS.Free (Process_Ptr);
+    exception
+      when Occurrence : others => Exceptions.Put_Error (Occurrence);
     end;
   end;
 end;

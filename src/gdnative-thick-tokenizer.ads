@@ -6,9 +6,12 @@ package GDNative.Thick.Tokenizer is
 
   function Initialize (Input : String; Separators : Character_Array) return Tokenizer_State;
 
-  procedure Skip         (State : in out Tokenizer_State);
-  function  Read_String  (State : in out Tokenizer_State) return String;
-  function  Read_Integer (State : in out Tokenizer_State) return Integer;
+  procedure Skip           (State : in out Tokenizer_State);
+  procedure Skip_Until     (State : in out Tokenizer_State; Indicators : Character_Array);
+  procedure Skip_Until_Not (State : in out Tokenizer_State; Indicators : Character_Array);
+  procedure Skip_Line      (State : in out Tokenizer_State);
+  function  Read_String    (State : in out Tokenizer_State) return String;
+  function  Read_Integer   (State : in out Tokenizer_State) return Integer;
 
 -------
 private
@@ -26,10 +29,9 @@ private
     Token_End      : Natural;
   end record;
 
-  procedure Skip_Until_Next (State : in out Tokenizer_State);
-  procedure Next            (State : in out Tokenizer_State);
-  procedure Start           (State : in out Tokenizer_State);
-  procedure Stop            (State : in out Tokenizer_State);
-  function  Read            (State : in out Tokenizer_State) return String;
+  procedure Next  (State : in out Tokenizer_State);
+  procedure Start (State : in out Tokenizer_State);
+  procedure Stop  (State : in out Tokenizer_State);
+  function  Read  (State : in out Tokenizer_State) return String;
 
 end;

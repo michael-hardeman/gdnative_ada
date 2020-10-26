@@ -49,11 +49,13 @@ package body GDNative.Thick is
   ------------------------
   -- GDNative Initalize --
   ------------------------
-  procedure GDNative_Initialize (p_options : access godot_gdnative_init_options) is 
+  procedure GDNative_Initialize (p_options : access godot_gdnative_init_options) is
     Cursor : GDnative_Api_Struct_Pointers.Pointer;
   begin
     Core_Api := p_options.api_struct;
     Core_Initialized := True;
+
+    Core_Api.godot_variant_new_nil (Nil_Godot_Variant'access);
 
     Cursor := Core_Api.extensions;
     for I in 1 .. Core_Api.num_extensions loop
@@ -102,7 +104,5 @@ package body GDNative.Thick is
     Nativescript_Ptr         := p_handle;
     Nativescript_Initialized := True;
   end;
-
- 
 
 end;

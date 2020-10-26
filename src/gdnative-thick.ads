@@ -12,8 +12,9 @@ package GDNative.Thick is
 
   function To_Str  (S : Wide_String) return String;
   function To_Wide (S : String)      return Wide_String;
-  -- function "&" (Left : String; Right : Wide_String) return Wide_String is (To_Wide (S) & Right);
-  -- function "&" (Left : Wide_String; Right : String) return Wide_String is (S & To_Wide (Right));
+
+  -- Use for function returns for void
+  Nil_Godot_Variant : aliased godot_variant;
 
 -------
 private

@@ -13,4 +13,5 @@ library project GDNative_Ada is
                              "GDNative.Thick.Objects");
 
   package Compiler is for Default_Switches ("Ada") use ("-g"); end Compiler;
+
 end GDNative_Ada;

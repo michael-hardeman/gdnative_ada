@@ -40,29 +40,24 @@ package body GDNative.Thick.Exceptions is
   --
   -- Example Input:
   --
-  -- 00417D7F in ?? at cygming-crtend.c:0
-  -- 00401A61 in test_stack_trace.call_stack at test_stack_trace.adb:10
-  -- 00401A25 in test_stack_trace.inner at test_stack_trace.adb:16
-  -- 00401A0C in test_stack_trace.middle at test_stack_trace.adb:21
-  -- 0040193E in test_stack_trace.outer at test_stack_trace.adb:26
-  -- 004018A2 in _ada_test_stack_trace at test_stack_trace.adb:30
-  -- 004016BE in main at b~test_stack_trace.adb:183
-  -- 00401235 in ?? at cygming-crtend.c:0
-  -- 00401286 in ?? at cygming-crtend.c:0
-  -- 7C817075 in ?? at ??:0
+  -- [C:\project\libproject.dll]
+  -- test_stack_trace.call_stack at test_stack_trace.adb:10
+  -- test_stack_trace.inner at test_stack_trace.adb:16
+  -- test_stack_trace.middle at test_stack_trace.adb:21
+  -- test_stack_trace.outer at test_stack_trace.adb:26
+  -- _ada_test_stack_trace at test_stack_trace.adb:30
   procedure Parse (Report : in out Error_Report) is
     use Tokenizer;
-    Traces       : GT.Tracebacks_Array := GT.Call_Chain (Max_Len => 10, Skip_Frames => 2);
+    Traces       : GT.Tracebacks_Array := GT.Call_Chain (Max_Len => 8, Skip_Frames => 3);
     Input        : String              := GTS.Symbolic_Traceback (Traces);
-    Seps         : Character_Array     := (' ', ':'); 
+    Seps         : Character_Array     := (' ', ':', ASCII.LF, ASCII.CR);
     State        : Tokenizer_State     := Initialize (Input, Seps);
   begin
-    Skip (State);     -- Hex
-    Skip (State);     -- in
-    Report.Subprogram := ICS.New_String (Read_String (State));
-    Skip (State);     -- at
-    Report.File       := ICS.New_String (Read_String (State));
-    Report.Line       := IC.int         (Read_Integer (State));
+    Skip_Line (State); -- [path/lib<project.library_name>.dll]
+    Report.Subprogram  := ICS.New_String (Read_String (State));
+    Skip (State);      -- at
+    Report.File        := ICS.New_String (Read_String (State));
+    Report.Line        := IC.int         (Read_Integer (State));
   end;
 
   -----------------
@@ -87,21 +82,6 @@ package body GDNative.Thick.Exceptions is
     Parse (Report);
     Core_Api.godot_print_error (Description, Report.Subprogram, Report.File, Report.Line);
     ICS.Free (Description);
-  end;
-
-  -------------------------
-  -- Last_Chance_Handler --
-  -------------------------
-  procedure Last_Chance_Handler (Occurrence : Ada.Exceptions.Exception_Occurrence) is
-    procedure Unhandled_Terminate 
-      with No_Return, Import, Convention => C, External_Name => "__gnat_unhandled_terminate";
-  begin
-    begin
-      Put_Error (Occurrence); -- Process the exception here.
-    exception
-      when others => null;
-    end;
-    Unhandled_Terminate;
   end;
 
 end;

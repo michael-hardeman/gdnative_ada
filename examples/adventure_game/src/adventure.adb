@@ -4,11 +4,11 @@ with GDNative.Thick.Exceptions; use GDNative.Thick.Exceptions;
 package body Adventure is
 
   overriding procedure Process (Item : in out Player; Delta_Time : in Long_Float) is begin
-    Player.Health := Player.Health - 1;
-    if Player.Health = 0 then
+    Item.Health := Item.Health - 1;
+    if Item.Health = 0 then
       Put ("Player Died!");
       Put ("Player Respawn");
-      Player.Health = 100;
+      Item.Health := 100;
     end if;
   end;
 

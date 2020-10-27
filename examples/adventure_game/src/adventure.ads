@@ -4,14 +4,12 @@ with GDNative.Objects; use GDNative.Objects;
 package Adventure is
 
   type Player is new Node with record
-    Health : Natural;
+    Health : Integer;
   end record;
   for Player'External_Tag use "Player";
-  overriding function Constructor (Parameters : not null access No_Parameters) return Player is (Player'(Health => 100));
-  overriding procedure Process (Item : in out Player; Delta_Time : in Long_Float);
-
-  package Player_Class_Registration is new Object_Registration (T => Player);
-  package Player_Node_Registration  is new Node_Registration (T => Player);
+  overriding function Initialize return Player is (Player'(Health => 100));
+  overriding procedure Process (Self : in out Player; Delta_Time : in Long_Float);
+  package Player_Registration is new Node_Registration (Player);
 
   procedure Register_Classes;
 

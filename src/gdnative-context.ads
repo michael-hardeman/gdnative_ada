@@ -7,9 +7,6 @@ package GDNative.Context is
 
   procedure Nativescript_Initialize (p_handle  : in Thin.Nativescript_Handle);
 
-  procedure Assert_Core_Initalized;
-  procedure Assert_Nativescript_Initalized;
-
   -- Use for function returns for void
   Nil_Godot_Variant        : aliased Thin.godot_variant;
 

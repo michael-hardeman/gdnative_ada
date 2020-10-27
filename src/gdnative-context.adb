@@ -10,28 +10,14 @@ package body GDNative.Context is
   package ICS renames Interfaces.C.Strings;
   package AE  renames Ada.Exceptions;
 
-  ----------------------------
-  -- Assert Core Initalized --
-  ----------------------------
-  procedure Assert_Core_Initalized is begin
-    if Core_Initialized then return; end if;
-    raise Program_Error with "GDNative Context not Initialized!";
-  end;
-
-  ------------------------------------
-  -- Assert Nativescript Initalized --
-  ------------------------------------
-  procedure Assert_Nativescript_Initalized is begin
-    if Core_Initialized and then Nativescript_Initialized then return; end if;
-    raise Program_Error with "GDNative Context Nativescript not Initialized!";
-  end;
-
   ------------------------
   -- GDNative Initalize --
   ------------------------
   procedure GDNative_Initialize (p_options : access Thin.godot_gdnative_init_options) is
     Cursor : Thin.GDnative_Api_Struct_Pointers.Pointer;
   begin
+    pragma Assert (not Core_Initialized, "Cannot initialize Core twice");
+
     Core_Api := p_options.api_struct;
     Core_Initialized := True;
 
@@ -65,6 +51,9 @@ package body GDNative.Context is
   -- GDNative Finalize --
   -----------------------
   procedure GDNative_Finalize (p_options : access Thin.godot_gdnative_terminate_options) is begin
+    pragma Assert (Core_Initialized,         "Finalizing without Initializing Core");
+    pragma Assert (Nativescript_Initialized, "Finalizing without Initializing Nativescript");
+
     Core_Initialized         := False;
     Nativescript_Initialized := False;
     Core_Api                 := null;
@@ -81,6 +70,8 @@ package body GDNative.Context is
   -- Nativescript Initialize --
   -----------------------------
   procedure Nativescript_Initialize (p_handle : in Thin.Nativescript_Handle) is begin
+    pragma Assert (not Nativescript_Initialized, "Cannot intialize Nativescript twice");
+
     Nativescript_Ptr         := p_handle;
     Nativescript_Initialized := True;
   end;

@@ -68,6 +68,7 @@ package body GDNative.Exceptions is
     Description : ICS.chars_ptr := ICS.New_String (To_Str (Message));
     Report      : Error_Report;
   begin
+    pragma Assert (Context.Core_Initialized, "Please run Context.GDNative_Initialize");
     Parse (Report);
     Context.Core_Api.godot_print_warning (Description, Report.Subprogram, Report.File, Report.Line);
     ICS.Free (Description);
@@ -80,6 +81,7 @@ package body GDNative.Exceptions is
     Description : ICS.chars_ptr := ICS.New_String (AE.Exception_Information (Occurrence));
     Report      : Error_Report;
   begin
+    pragma Assert (Context.Core_Initialized, "Please run Context.GDNative_Initialize");
     Parse (Report);
     Context.Core_Api.godot_print_error (Description, Report.Subprogram, Report.File, Report.Line);
     ICS.Free (Description);

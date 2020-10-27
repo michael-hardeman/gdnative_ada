@@ -1,6 +1,6 @@
 with System;
 with Interfaces.C;
-with GDNative; use GDNative;
+with GDNative.Thin; use GDNative.Thin;
 
 package Simple is
 

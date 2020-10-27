@@ -8,10 +8,10 @@ package body Simple is
   package IC renames Interfaces.C;
   package ICS renames Interfaces.C.Strings;
   
-  use all type gdnative.GDNATIVE_API_TYPES;
+  use all type GDNATIVE_API_TYPES;
 
-  Core_Api         : godot_gdnative_core_api_struct;
-  Nativescript_Api : access godot_gdnative_ext_nativescript_api_struct;
+  Core_Api         : godot_gdnative_core_api_struct_ptr;
+  Nativescript_Api : godot_gdnative_ext_nativescript_api_struct_ptr;
 
   procedure godot_gdnative_init (p_options : access godot_gdnative_init_options) is 
     Cursor : GDnative_Api_Struct_Pointers.Pointer;
@@ -21,7 +21,7 @@ package body Simple is
     for I in 1 .. Core_Api.num_extensions loop
       case Cursor.all.c_type is
         when GDNATIVE_EXT_NATIVESCRIPT =>
-          Nativescript_Api := To_godot_gdnative_ext_nativescript_api_struct (Cursor.all);
+          Nativescript_Api := To_Api_Struct_Ptr (Cursor.all);
         when others => null;
       end case;
       GDnative_Api_Struct_Pointers.Increment (Cursor);

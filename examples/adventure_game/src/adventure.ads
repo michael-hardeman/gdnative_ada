@@ -1,6 +1,5 @@
 with System;
-with GDNative.Thick;         use GDNative.Thick;
-with GDNative.Thick.Objects; use GDNative.Thick.Objects;
+with GDNative.Objects; use GDNative.Objects;
 
 package Adventure is
 

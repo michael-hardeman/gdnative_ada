@@ -1,6 +1,6 @@
 with Ada.Integer_Text_IO;  use Ada.Integer_Text_IO;
 
-package body GDNative.Thick.Tokenizer is 
+package body GDNative.Tokenizer is 
   
   ----------------
   -- Initialize --
@@ -49,7 +49,7 @@ package body GDNative.Thick.Tokenizer is
   -------------------------
   -- At End Or Indicator --
   -------------------------
-  function At_End_Or_Indicator (State : Tokenizer_State; Indicators : Character_Array) return Boolean is begin
+  function At_End_Or_Indicator (State : in Tokenizer_State; Indicators : in Character_Array) return Boolean is begin
     return State.Current_Offset >= State.Input'length or
       (for some Indicator of Indicators => Indicator = State.Current);
   end;
@@ -57,7 +57,7 @@ package body GDNative.Thick.Tokenizer is
   -----------------------------
   -- At End Or Not Indicator --
   -----------------------------
-  function At_End_Or_Not_Indicator (State : Tokenizer_State; Indicators : Character_Array) return Boolean is begin
+  function At_End_Or_Not_Indicator (State : in Tokenizer_State; Indicators : in Character_Array) return Boolean is begin
     return State.Current_Offset >= State.Input'length or
       (for all Indicator of Indicators => Indicator /= State.Current);
   end;
@@ -116,11 +116,10 @@ package body GDNative.Thick.Tokenizer is
   -- Read Integer --
   ------------------
   function Read_Integer (State : in out Tokenizer_State) return Integer is 
-    Token  : String := Read_String (State);
     Output : Integer;
     Last   : Integer;
   begin
-    Get (Token, Output, Last);
+    Get (Read_String (State), Output, Last);
     return Output;
   end;
 

@@ -1,5 +1,4 @@
-with GDNative.Thick.Console; use GDNative.Thick.Console;
-with GDNative.Thick.Exceptions; use GDNative.Thick.Exceptions;
+with GDNative.Console; use GDNative.Console;
 
 package body Adventure is
 

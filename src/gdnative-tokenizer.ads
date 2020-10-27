@@ -1,4 +1,4 @@
-package GDNative.Thick.Tokenizer is
+package GDNative.Tokenizer is
 
   type Character_Array is array (Positive range <>) of Character;
 
@@ -28,6 +28,9 @@ private
     Token_Start    : Natural;
     Token_End      : Natural;
   end record;
+
+  function At_End_Or_Indicator     (State : in Tokenizer_State; Indicators : in Character_Array) return Boolean;
+  function At_End_Or_Not_Indicator (State : in Tokenizer_State; Indicators : in Character_Array) return Boolean;
 
   procedure Next  (State : in out Tokenizer_State);
   procedure Start (State : in out Tokenizer_State);

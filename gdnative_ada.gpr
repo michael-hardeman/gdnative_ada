@@ -1,17 +1,51 @@
 library project GDNative_Ada is
   
+  type Boolean_Option is ("No", "Yes");
+  DEBUG : Boolean_Option := External ("Debug", "Yes");
+
+  Source_Directories := ("src");
+
+  case DEBUG is
+    when "No"  => Source_Directories := Source_Directories & ("src/exceptions-stub"); 
+    when "Yes" => Source_Directories := Source_Directories & ("src/exceptions");
+  end case;
+
   for Object_Dir        use "obj";
-  for Source_Dirs       use ("src");
+  for Source_Dirs       use Source_Directories;
   for Library_Dir       use "lib";
   for Library_Name      use "gdnative_ada";
   for Library_Kind      use "static";
   for Library_Interface use ("GDNative",
-                             "GDNative.Thick",
-                             "GDNative.Thick.Tokenizer",
-                             "GDNative.Thick.Exceptions",
-                             "GDNative.Thick.Console",
-                             "GDNative.Thick.Objects");
+                             "GDNative.Thin",
+                             "GDNative.Context",
+                             "GDNative.Tokenizer",
+                             "GDNative.Exceptions",
+                             "GDNative.Console",
+                             "GDNative.Objects");
 
-  package Compiler is for Default_Switches ("Ada") use ("-g"); end Compiler;
+  Switch_Compiler := ("-gnat2020"); -- Use Gnat2012 ada syntax rules
+
+  case DEBUG is
+    when "No" =>
+      Switch_Compiler := Switch_Compiler & (
+        "-O3",                         -- Optimize (level 3)
+        "-gnatp",                      -- Surpress all checks
+        "-gnatx",                      -- Surpress cross-reference data
+        "-funsafe-math-optimizations", -- Unsafe math optimizations
+        "-ffast-math");                -- Force SIMD optmization
+    when "Yes" =>
+      Switch_Compiler := Switch_Compiler & (
+        "-O0",                         -- Optimize (level 0)
+        "-g",                          -- Generate debugging information
+        "-fstack-check",               -- Generate stack checking code
+        "-gnata",                      -- Enable assertions
+        "-gnato13",                    -- Overflow checking
+        "-gnatf",                      -- Full, verbose error messages
+        "-gnatwe");                    -- Treat warnings as errors
+  end case;
+
+  package Compiler is
+    for Default_Switches ("Ada") use Switch_Compiler;
+  end Compiler;
 
 end GDNative_Ada;

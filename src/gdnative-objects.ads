@@ -5,7 +5,9 @@ with Interfaces.C;
 with Ada.Tags;
 with Ada.Tags.Generic_Dispatching_Constructor;
 
-package GDNative.Thick.Objects is
+with GDNative.Thin;
+
+package GDNative.Objects is
 
   type No_Parameters is null record;
 
@@ -69,8 +71,8 @@ package GDNative.Thick.Objects is
       p_method_data : System.Address;
       p_user_data   : System.Address;
       p_num_args    : Interfaces.C.int;
-      p_args        : Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
-      return godot_variant 
+      p_args        : Thin.Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
+      return Thin.godot_variant
       with Convention => C;
 
   end;

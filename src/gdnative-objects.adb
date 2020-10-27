@@ -1,18 +1,15 @@
 
-with System;
 with System.Address_To_Access_Conversions;
 
-with Interfaces.C;
 with Interfaces.C.Strings;
 
-with Ada.Tags;
-with Ada.Tags.Generic_Dispatching_Constructor;
 with Ada.Exceptions;
 
-with GDNative.Thick.Console;
-with GDNative.Thick.Exceptions;
+with GDNative.Context;
+with GDNative.Console;
+with GDNative.Exceptions;
 
-package body GDNative.Thick.Objects is
+package body GDNative.Objects is
 
   package S   renames System;
   package IC  renames Interfaces.C;
@@ -33,7 +30,7 @@ package body GDNative.Thick.Objects is
       p_method_data : S.Address)
       return S.Address
     is
-      Addr            : S.Address           := Core_Api.godot_alloc (IC.int (T'size));
+      Addr            : S.Address           := Context.Core_Api.godot_alloc (IC.int (T'size));
       Access_Instance : Cast.Object_Pointer := Cast.To_Pointer (Addr);
     begin
       Access_Instance.all := T (Construct (T'tag, NO_PARAMS'access));
@@ -49,7 +46,7 @@ package body GDNative.Thick.Objects is
       p_method_data : S.Address;
       p_user_data   : S.Address)
     is begin
-      Core_Api.godot_free (p_user_data);
+      Context.Core_Api.godot_free (p_user_data);
     exception
       when Occurrence : others => Exceptions.Put_Error (Occurrence);
     end;
@@ -58,18 +55,18 @@ package body GDNative.Thick.Objects is
     -- Register_Class --
     --------------------
     procedure Register_Class is
-      Create_Func  : godot_instance_create_func  := (Create'access, S.Null_Address, null);
-      Destroy_Func : godot_instance_destroy_func := (Destroy'access, S.Null_Address, null);
+      Create_Func  : Thin.godot_instance_create_func  := (Create'access, S.Null_Address, null);
+      Destroy_Func : Thin.godot_instance_destroy_func := (Destroy'access, S.Null_Address, null);
      
       Name_Ptr      : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (T'Tag));
       Reference_Ptr : ICS.chars_ptr := ICS.New_String ("Reference");
     begin
-      Assert_Nativescript_Initalized;
+      Context.Assert_Nativescript_Initalized;
 
       Console.Put ("Registering Class: " & To_Wide (Ada.Tags.External_Tag (T'Tag)));
 
-      Nativescript_Api.godot_nativescript_register_class (
-        Nativescript_Ptr, 
+      Context.Nativescript_Api.godot_nativescript_register_class (
+        Context.Nativescript_Ptr, 
         Name_Ptr,
         Reference_Ptr,
         Create_Func, 
@@ -96,36 +93,36 @@ package body GDNative.Thick.Objects is
       p_method_data : S.Address;
       p_user_data   : S.Address;
       p_num_args    : IC.int;
-      p_args        : Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
-      return GDNative.godot_variant
+      p_args        : Thin.Godot_Instance_Method_Args_Ptrs.Pointer) -- godot_variant **
+      return Thin.godot_variant
     is
       Access_Instance : Cast.Object_Pointer := Cast.To_Pointer (p_user_data);
-      Time_Elapsed    : IC.double           := Core_Api.godot_variant_as_real (p_args.all);
+      Time_Elapsed    : IC.double           := Context.Core_Api.godot_variant_as_real (p_args.all);
     begin
       Process (Access_Instance.all, Long_Float (Time_Elapsed));
-      return Nil_Godot_Variant;
+      return Context.Nil_Godot_Variant;
     exception
       when Occurrence : others => 
         Exceptions.Put_Error (Occurrence);
-        return Nil_Godot_Variant;
+        return Context.Nil_Godot_Variant;
     end;
 
     ----------------------
     -- Register Process --
     ----------------------
     procedure Register_Process is
-      Process_Func : godot_instance_method   := (Process'access, S.Null_Address, null);
-      Process_Attr : godot_method_attributes := (rpc_type => GODOT_METHOD_RPC_MODE_DISABLED);
+      Process_Func : Thin.godot_instance_method   := (Process'access, S.Null_Address, null);
+      Process_Attr : Thin.godot_method_attributes := (rpc_type => Thin.GODOT_METHOD_RPC_MODE_DISABLED);
 
       Name_Ptr    : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (T'tag));
       Process_Ptr : ICS.chars_ptr := ICS.New_String ("_process");
     begin
-      Assert_Nativescript_Initalized;
+      Context.Assert_Nativescript_Initalized;
 
       Console.Put ("Registering Method: " & To_Wide (Ada.Tags.External_Tag (T'Tag)) & "._process");
 
-      Nativescript_Api.godot_nativescript_register_method (
-        Nativescript_Ptr,
+      Context.Nativescript_Api.godot_nativescript_register_method (
+        Context.Nativescript_Ptr,
         Name_Ptr,
         Process_Ptr, 
         Process_Attr, 

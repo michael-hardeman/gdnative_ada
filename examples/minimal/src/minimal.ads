@@ -1,5 +1,5 @@
 with System;
-with GDNative; use GDNative;
+with GDNative.Thin; use GDNative.Thin;
 
 package Minimal is
 

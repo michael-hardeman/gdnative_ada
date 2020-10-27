@@ -1,6 +1,6 @@
 with Ada.Integer_Text_IO;  use Ada.Integer_Text_IO;
 
-package body GDNative.Thick.Tokenizer is 
+package body GDNative.Tokenizer is 
   
   ----------------
   -- Initialize --
@@ -47,17 +47,17 @@ package body GDNative.Thick.Tokenizer is
   end;
 
   -------------------------
-  -- At Indicator Or End --
+  -- At End Or Indicator --
   -------------------------
-  function At_Indicator_Or_End (State : Tokenizer_State; Indicators : Character_Array) return Boolean is begin
+  function At_End_Or_Indicator (State : in Tokenizer_State; Indicators : in Character_Array) return Boolean is begin
     return State.Current_Offset >= State.Input'length or
       (for some Indicator of Indicators => Indicator = State.Current);
   end;
 
-  --------------------------
-  -- Not Indicator Or End --
-  --------------------------
-  function Not_Indicator_Or_End (State : Tokenizer_State; Indicators : Character_Array) return Boolean is begin
+  -----------------------------
+  -- At End Or Not Indicator --
+  -----------------------------
+  function At_End_Or_Not_Indicator (State : in Tokenizer_State; Indicators : in Character_Array) return Boolean is begin
     return State.Current_Offset >= State.Input'length or
       (for all Indicator of Indicators => Indicator /= State.Current);
   end;
@@ -67,7 +67,7 @@ package body GDNative.Thick.Tokenizer is
   ----------------
   procedure Skip_Until (State : in out Tokenizer_State; Indicators : Character_Array) is begin
     loop
-      exit when At_Indicator_Or_End (State, Indicators);
+      exit when At_End_Or_Indicator (State, Indicators);
       Next (State);
     end loop;
   end;
@@ -77,7 +77,7 @@ package body GDNative.Thick.Tokenizer is
   --------------------
   procedure Skip_Until_Not (State : in out Tokenizer_State; Indicators : Character_Array) is begin
     loop
-      exit when Not_Indicator_Or_End (State, Indicators);
+      exit when At_End_Or_Not_Indicator (State, Indicators);
       Next (State);
     end loop;
   end;
@@ -104,7 +104,7 @@ package body GDNative.Thick.Tokenizer is
   function Read_String (State : in out Tokenizer_State) return String is begin
     Start (State);
     loop
-      exit when At_Indicator_Or_End (State, State.Separators);
+      exit when At_End_Or_Indicator (State, State.Separators);
       Next (State);
     end loop;
     Stop (State);
@@ -116,11 +116,10 @@ package body GDNative.Thick.Tokenizer is
   -- Read Integer --
   ------------------
   function Read_Integer (State : in out Tokenizer_State) return Integer is 
-    Token  : String := Read_String (State);
     Output : Integer;
     Last   : Integer;
   begin
-    Get (Token, Output, Last);
+    Get (Read_String (State), Output, Last);
     return Output;
   end;
 

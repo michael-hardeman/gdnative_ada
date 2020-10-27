@@ -8,9 +8,10 @@ with Ada.Finalization;
 with GNAT.Traceback;
 with GNAT.Traceback.Symbolic;
 
-with GDNative.Thick.Tokenizer;
+with GDNative.Tokenizer;
+with GDNative.Context;
 
-package body GDNative.Thick.Exceptions is
+package body GDNative.Exceptions is
 
   package IC  renames Interfaces.C;
   package ICS renames Interfaces.C.Strings;
@@ -67,8 +68,9 @@ package body GDNative.Thick.Exceptions is
     Description : ICS.chars_ptr := ICS.New_String (To_Str (Message));
     Report      : Error_Report;
   begin
+    pragma Assert (Context.Core_Initialized, "Please run Context.GDNative_Initialize");
     Parse (Report);
-    Core_Api.godot_print_warning (Description, Report.Subprogram, Report.File, Report.Line);
+    Context.Core_Api.godot_print_warning (Description, Report.Subprogram, Report.File, Report.Line);
     ICS.Free (Description);
   end;
 
@@ -79,8 +81,9 @@ package body GDNative.Thick.Exceptions is
     Description : ICS.chars_ptr := ICS.New_String (AE.Exception_Information (Occurrence));
     Report      : Error_Report;
   begin
+    pragma Assert (Context.Core_Initialized, "Please run Context.GDNative_Initialize");
     Parse (Report);
-    Core_Api.godot_print_error (Description, Report.Subprogram, Report.File, Report.Line);
+    Context.Core_Api.godot_print_error (Description, Report.Subprogram, Report.File, Report.Line);
     ICS.Free (Description);
   end;
 

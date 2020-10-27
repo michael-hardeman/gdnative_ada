@@ -1,4 +1,4 @@
-package GDNative.Thick.Console is
+package GDNative.Console is
 
   ---------
   -- Put --

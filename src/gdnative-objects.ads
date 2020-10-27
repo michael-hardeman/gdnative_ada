@@ -16,7 +16,7 @@ package GDNative.Objects is
   -- Object Registration --
   -------------------------
   generic
-    type T (<>) is new Object with private;
+    type New_Object (<>) is new Object with private;
   package Object_Registration is
     procedure Register_Class;
   end;
@@ -25,7 +25,7 @@ package GDNative.Objects is
   -- Node Registration --
   -----------------------
   generic
-    type T (<>) is new Node with private;
+    type New_Node (<>) is new Node with private;
   package Node_Registration is
     procedure Register_Class;
     procedure Register_Process;

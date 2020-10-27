@@ -23,7 +23,7 @@ package body GDNative.Objects is
   -------------------------
   package body Object_Registration is
 
-    package Cast is new System.Address_To_Access_Conversions (T);
+    package Cast is new System.Address_To_Access_Conversions (New_Object);
 
     package Wrappers is
 
@@ -48,7 +48,7 @@ package body GDNative.Objects is
         p_method_data : S.Address)
         return S.Address
       is
-        Addr            : S.Address           := Context.Core_Api.godot_alloc (IC.int (T'size));
+        Addr            : S.Address           := Context.Core_Api.godot_alloc (IC.int (New_Object'size));
         Access_Instance : Cast.Object_Pointer := Cast.To_Pointer (Addr);
       begin
         Access_Instance.all := Initialize;
@@ -78,13 +78,13 @@ package body GDNative.Objects is
       Create_Func  : Thin.godot_instance_create_func  := (Wrappers.Create'access,  S.Null_Address, null);
       Destroy_Func : Thin.godot_instance_destroy_func := (Wrappers.Destroy'access, S.Null_Address, null);
      
-      Name_Ptr      : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (T'Tag));
+      Name_Ptr      : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (New_Object'Tag));
       Reference_Ptr : ICS.chars_ptr := ICS.New_String ("Reference");
     begin
       pragma Assert (Context.Core_Initialized,         "Please run Context.GDNative_Initialize");
       pragma Assert (Context.Nativescript_Initialized, "Please run Context.Nativescript_Initialize");
 
-      Console.Put ("Registering Class: " & To_Wide (Ada.Tags.External_Tag (T'Tag)));
+      Console.Put ("Registering Class: " & To_Wide (Ada.Tags.External_Tag (New_Object'Tag)));
 
       Context.Nativescript_Api.godot_nativescript_register_class (
         Context.Nativescript_Ptr, 
@@ -105,7 +105,7 @@ package body GDNative.Objects is
   -----------------------
   package body Node_Registration is
 
-    package Cast is new System.Address_To_Access_Conversions (T);
+    package Cast is new System.Address_To_Access_Conversions (New_Node);
 
     package Wrappers is
       function Process (
@@ -139,7 +139,7 @@ package body GDNative.Objects is
       end;
     end;
 
-    package Obj_Reg is new Object_Registration (T);
+    package Obj_Reg is new Object_Registration (New_Node);
     procedure Register_Class renames Obj_Reg.Register_Class;
 
     ----------------------
@@ -149,13 +149,13 @@ package body GDNative.Objects is
       Process_Func : Thin.godot_instance_method   := (Wrappers.Process'access, S.Null_Address, null);
       Process_Attr : Thin.godot_method_attributes := (rpc_type => Thin.GODOT_METHOD_RPC_MODE_DISABLED);
 
-      Name_Ptr    : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (T'tag));
+      Name_Ptr    : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (New_Node'tag));
       Process_Ptr : ICS.chars_ptr := ICS.New_String ("_process");
     begin
       pragma Assert (Context.Core_Initialized,         "Please run Context.GDNative_Initialize");
       pragma Assert (Context.Nativescript_Initialized, "Please run Context.Nativescript_Initialize");
 
-      Console.Put ("Registering Method: " & To_Wide (Ada.Tags.External_Tag (T'Tag)) & "._process");
+      Console.Put ("Registering Method: " & To_Wide (Ada.Tags.External_Tag (New_Node'Tag)) & "._process");
 
       Context.Nativescript_Api.godot_nativescript_register_method (
         Context.Nativescript_Ptr,

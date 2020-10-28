@@ -6,8 +6,8 @@ library project GDNative_Ada is
   Source_Directories := ("src");
 
   case DEBUG is
-    when "No"  => Source_Directories := Source_Directories & ("src/exceptions-stub"); 
-    when "Yes" => Source_Directories := Source_Directories & ("src/exceptions");
+    when "No"  => Source_Directories := Source_Directories & ("src/release"); 
+    when "Yes" => Source_Directories := Source_Directories & ("src/debug");
   end case;
 
   for Object_Dir        use "obj";

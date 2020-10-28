@@ -16,4 +16,5 @@ _global_script_class_icons={
 [application]
 
 config/name="GDNative Ada Minimal Example"
+run/main_scene="res://main.tscn"
 config/icon="res://icon.png"

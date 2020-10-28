@@ -2,7 +2,7 @@ with GDNative.Context;
 with GDNative.Console;
 with GDNative.Exceptions;
 
-with Adventure;
+with Action_RPG;
 
 package body Engine_Hooks is
 
@@ -23,7 +23,7 @@ package body Engine_Hooks is
 
     Context.Nativescript_Initialize (p_handle);
 
-    Adventure.Register_Classes;
+    Action_RPG.Register_Classes;
 
     Console.Put ("Nativescript Initialized!");
   exception

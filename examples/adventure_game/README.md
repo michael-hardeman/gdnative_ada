@@ -1,4 +1,0 @@
-# Adventure Game Example
-
----
-

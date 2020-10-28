@@ -1,8 +1,8 @@
 with GDNative.Console; use GDNative.Console;
 
-package body Adventure is
+package body Action_RPG is
 
-  procedure Process (Self : in out Player; Delta_Time : in Long_Float) is begin
+  procedure Physics_Process (Self : in out Player; Delta_Time : in Long_Float) is begin
     Self.Health := Self.Health - 1;
     if Self.Health = 0 then
       Put ("Player Died!");
@@ -13,7 +13,7 @@ package body Adventure is
 
   procedure Register_Classes is begin
     Player_Registration.Register_Class;
-    Player_Registration.Register_Process;
+    Player_Registration.Register_Physics_Process;
   end;
 
 end;

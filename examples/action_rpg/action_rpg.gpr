@@ -1,7 +1,8 @@
 with "../../gdnative_ada.gpr";
 
-library project Adventure is
-  for Library_Name use "adventure";
+library project Action_RPG is
+  
+  for Library_Name use "action_rpg";
   for Library_Kind use "dynamic";
   for Library_Interface use ("Engine_Hooks");
   for Library_Standalone use "encapsulated";
@@ -11,4 +12,4 @@ library project Adventure is
 
   package Compiler renames GDNative_Ada.Compiler;
   
-end Adventure;
+end Action_RPG;

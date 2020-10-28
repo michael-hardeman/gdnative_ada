@@ -413,13 +413,15 @@ package GDNative.Thin is
       Element_Array => godot_variant_ptr_array,
       Default_Terminator => null);
 
-   type godot_instance_method is record
-      method : access function
+   type access_godot_instance_method is access function
            (arg1 : System.Address;
             arg2 : System.Address;
             arg3 : System.Address;
             arg4 : IC.int;
-            arg5 : Godot_Instance_Method_Args_Ptrs.Pointer) return godot_variant;  -- ./nativescript/godot_nativescript.h:149
+            arg5 : Godot_Instance_Method_Args_Ptrs.Pointer) return godot_variant;
+
+   type godot_instance_method is record
+      method : access_godot_instance_method;  -- ./nativescript/godot_nativescript.h:149
       method_data : System.Address;  -- ./nativescript/godot_nativescript.h:150
       free_func : access procedure (arg1 : System.Address);  -- ./nativescript/godot_nativescript.h:151
    end record;

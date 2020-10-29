@@ -497,40 +497,6 @@ package GDNative.Thin is
    ------------------
    -- GDNATIVE_API --
    ------------------
-
-   --  arg-macro: procedure GDNATIVE_API_INIT (options)
-   -- 
-   --  extern const godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct; 
-   --  extern const godot_gdnative_ext_nativescript_api_struct *_gdnative_wrapper_nativescript_api_struct;
-   --  extern const godot_gdnative_ext_pluginscript_api_struct *_gdnative_wrapper_pluginscript_api_struct;
-   --  extern const godot_gdnative_ext_android_api_struct *_gdnative_wrapper_android_api_struct;
-   --  extern const godot_gdnative_ext_arvr_api_struct *_gdnative_wrapper_arvr_api_struct;
-   --  extern const godot_gdnative_ext_videodecoder_api_struct *_gdnative_wrapper_videodecoder_api_struct;
-   --  extern const godot_gdnative_ext_net_api_struct *_gdnative_wrapper_net_api_struct;
-   --  _gdnative_wrapper_api_struct := options.api_struct;
-   --  for (unsigned int i := 0; i < _gdnative_wrapper_api_struct.num_extensions; i++) { 
-   --    switch (_gdnative_wrapper_api_struct.extensions(i).type) {
-   --      case GDNATIVE_EXT_NATIVESCRIPT: 
-   --        _gdnative_wrapper_nativescript_api_struct := (godot_gdnative_ext_nativescript_api_struct *) _gdnative_wrapper_api_struct.extensions(i);
-   --        break;
-   --      case GDNATIVE_EXT_PLUGINSCRIPT: 
-   --        _gdnative_wrapper_pluginscript_api_struct := (godot_gdnative_ext_pluginscript_api_struct *) _gdnative_wrapper_api_struct.extensions(i);
-   --        break;
-   --      case GDNATIVE_EXT_ANDROID: 
-   --        _gdnative_wrapper_android_api_struct := (godot_gdnative_ext_android_api_struct *) _gdnative_wrapper_api_struct.extensions(i);
-   --        break;
-   --      case GDNATIVE_EXT_ARVR: 
-   --        _gdnative_wrapper_arvr_api_struct := (godot_gdnative_ext_arvr_api_struct *) _gdnative_wrapper_api_struct.extensions(i);
-   --        break;
-   --      case GDNATIVE_EXT_VIDEODECODER: 
-   --        _gdnative_wrapper_videodecoder_api_struct := (godot_gdnative_ext_videodecoder_api_struct *) _gdnative_wrapper_api_struct.extensions(i);
-   --        break;
-   --      case GDNATIVE_EXT_NET: 
-   --        _gdnative_wrapper_net_api_struct := (godot_gdnative_ext_net_api_struct *) _gdnative_wrapper_api_struct.extensions(i);
-   --        break;
-   --    } 
-   --  }
-
    type godot_gdnative_ext_nativescript_1_1_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:56
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:57
@@ -580,8 +546,11 @@ package GDNative.Thin is
    ----------------------
    -- Nativescript API --
    ----------------------
+   type Singleton_Handle is new System.Address;
+   NULL_SINGLETON_HANDLE : constant Singleton_Handle := Singleton_Handle (System.Null_Address);
+   
    type Nativescript_Handle is new System.Address;
-   NULL_HANDLE : constant Nativescript_Handle := Nativescript_Handle (System.Null_Address);
+   NULL_NATIVESCRIPT_HANDLE : constant Nativescript_Handle := Nativescript_Handle (System.Null_Address);
 
    type godot_gdnative_ext_nativescript_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:75
@@ -1890,19 +1859,20 @@ package GDNative.Thin is
       godot_string_name_operator_less : access function (arg1 : access constant godot_string_name; arg2 : access constant godot_string_name) return godot_bool;  -- gdnative_api_struct.gen.h:946
       godot_string_name_destroy : access procedure (arg1 : access godot_string_name);  -- gdnative_api_struct.gen.h:947
       godot_object_destroy : access procedure (arg1 : System.Address);  -- gdnative_api_struct.gen.h:948
-      godot_global_get_singleton : access function (arg1 : ICS.chars_ptr) return System.Address;  -- gdnative_api_struct.gen.h:949
-      godot_method_bind_get_method : access function (arg1 : ICS.chars_ptr; arg2 : ICS.chars_ptr) return access godot_method_bind;  -- gdnative_api_struct.gen.h:950
+      godot_global_get_singleton : access function (arg1 : ICS.chars_ptr) return Singleton_Handle;  -- gdnative_api_struct.gen.h:949
+      godot_method_bind_get_method : access function (p_classname : ICS.chars_ptr; p_methodname : ICS.chars_ptr) return access godot_method_bind;  -- gdnative_api_struct.gen.h:950
       godot_method_bind_ptrcall : access procedure
-           (arg1 : access godot_method_bind;
-            arg2 : System.Address;
-            arg3 : System.Address;
-            arg4 : System.Address);  -- gdnative_api_struct.gen.h:951
+           (p_method_bind : access godot_method_bind;
+            p_instance : System.Address; -- godot_object * 
+            p_args : System.Address; --const void **
+            p_ret : System.Address); -- void * -- gdnative_api_struct.gen.h:951
       godot_method_bind_call : access function
-           (arg1 : access godot_method_bind;
-            arg2 : System.Address;
-            arg3 : System.Address;
-            arg4 : IC.int;
-            arg5 : access godot_variant_call_error) return godot_variant;  -- gdnative_api_struct.gen.h:952
+           (p_method_bind : access godot_method_bind;
+            p_instance : System.Address; -- godot_object *
+            p_args : System.Address; -- godot_variant **
+            p_arg_count : IC.int; -- p_arg_count
+            p_call_error : access godot_variant_call_error) 
+            return godot_variant;  -- gdnative_api_struct.gen.h:952
       godot_get_class_constructor : access function (arg1 : ICS.chars_ptr) return godot_class_constructor;  -- gdnative_api_struct.gen.h:953
       godot_get_global_constants : access function return godot_dictionary;  -- gdnative_api_struct.gen.h:954
       godot_register_native_call_type : access procedure (arg1 : ICS.chars_ptr; arg2 : native_call_cb);  -- gdnative_api_struct.gen.h:955

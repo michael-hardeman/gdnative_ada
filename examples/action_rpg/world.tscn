@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://world/bush.png" type="Texture" id=1]
-[ext_resource path="res://player/Player.png" type="Texture" id=2]
+[ext_resource path="res://player/player.png" type="Texture" id=2]
 [ext_resource path="res://lib/action_rpg.gdns" type="Script" id=3]
 
 [node name="world" type="Node2D"]

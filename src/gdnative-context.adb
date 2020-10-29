@@ -4,6 +4,8 @@ with Interfaces.C.Strings;
 
 with Ada.Exceptions;
 
+with GDNative.Input;
+
 package body GDNative.Context is
 
   package IC  renames Interfaces.C;
@@ -37,6 +39,9 @@ package body GDNative.Context is
       Thin.GDnative_Api_Struct_Pointers.Increment (Cursor);
     end loop;
 
+    -- Singletons
+    Input.Initialize;
+
   exception
     when Error: others =>
       declare
@@ -58,7 +63,7 @@ package body GDNative.Context is
     Nativescript_Initialized := False;
     Core_Api                 := null;
     Nativescript_Api         := null;
-    Nativescript_Ptr         := Thin.Null_Handle;
+    Nativescript_Ptr         := Thin.NULL_NATIVESCRIPT_HANDLE;
     Pluginscript_Api         := null;
     Android_Api              := null;
     Arvr_Api                 := null;

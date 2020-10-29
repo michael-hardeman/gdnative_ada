@@ -16,11 +16,13 @@ package body GDNative.Objects is
   package ICS renames Interfaces.C.Strings;
   package AE  renames Ada.Exceptions;
 
-  procedure Enter_Tree      (Self : in out Node)                             is begin raise Program_Error with "Registering non-overridden instance method: Enter_Tree"; end;
-  procedure Exit_Tree       (Self : in out Node)                             is begin raise Program_Error with "Registering non-overridden instance method: Exit_Tree"; end;
-  procedure Ready           (Self : in out Node)                             is begin raise Program_Error with "Registering non-overridden instance method: Ready"; end;
-  procedure Process         (Self : in out Node; Delta_Time : in Long_Float) is begin raise Program_Error with "Registering non-overridden instance method: Process"; end;
-  procedure Physics_Process (Self : in out Node; Delta_Time : in Long_Float) is begin raise Program_Error with "Registering non-overridden instance method: Physics_Process"; end;
+  INVALID_REGISTRATION : constant Wide_String := "Calling non-overridden instance method.";
+
+  procedure Enter_Tree      (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Exit_Tree       (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Ready           (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Process         (Self : in out Node; Delta_Time : in Long_Float) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Physics_Process (Self : in out Node; Delta_Time : in Long_Float) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
 
   -------------------------
   -- Object Registration --

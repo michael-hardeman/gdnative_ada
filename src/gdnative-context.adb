@@ -4,6 +4,7 @@ with Interfaces.C.Strings;
 
 with Ada.Exceptions;
 
+with GDNative.Input_Map;
 with GDNative.Input;
 
 package body GDNative.Context is
@@ -18,7 +19,7 @@ package body GDNative.Context is
   procedure GDNative_Initialize (p_options : access Thin.godot_gdnative_init_options) is
     Cursor : Thin.GDnative_Api_Struct_Pointers.Pointer;
   begin
-    pragma Assert (not Core_Initialized, "Cannot initialize Core twice");
+    pragma Assert (not Core_Initialized, CORE_MULTIPLE_INITIALIZATION_ASSERT);
 
     Core_Api := p_options.api_struct;
     Core_Initialized := True;
@@ -40,10 +41,11 @@ package body GDNative.Context is
     end loop;
 
     -- Singletons
+    Input_Map.Initialize;
     Input.Initialize;
 
   exception
-    when Error: others =>
+    when Error : others =>
       declare
         C_Error_Info : ICS.chars_ptr := ICS.New_String (AE.Exception_Information (Error));
       begin
@@ -56,8 +58,12 @@ package body GDNative.Context is
   -- GDNative Finalize --
   -----------------------
   procedure GDNative_Finalize (p_options : access Thin.godot_gdnative_terminate_options) is begin
-    pragma Assert (Core_Initialized,         "Finalizing without Initializing Core");
-    pragma Assert (Nativescript_Initialized, "Finalizing without Initializing Nativescript");
+    pragma Assert (Core_Initialized,         CORE_EARLY_FINALIZE_ASSERT);
+    pragma Assert (Nativescript_Initialized, NATIVESCRIPT_EARLY_FINALIZE_ASSERT);
+
+    -- Singletons
+    Input.Finalize;
+    Input_Map.Finalize;
 
     Core_Initialized         := False;
     Nativescript_Initialized := False;
@@ -75,7 +81,8 @@ package body GDNative.Context is
   -- Nativescript Initialize --
   -----------------------------
   procedure Nativescript_Initialize (p_handle : in Thin.Nativescript_Handle) is begin
-    pragma Assert (not Nativescript_Initialized, "Cannot intialize Nativescript twice");
+    pragma Assert (Core_Initialized,             CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (not Nativescript_Initialized, NATIVESCRIPT_MULTIPLE_INITIALIZATION_ASSERT);
 
     Nativescript_Ptr         := p_handle;
     Nativescript_Initialized := True;

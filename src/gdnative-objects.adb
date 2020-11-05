@@ -5,6 +5,7 @@ with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 
 with GDNative.Thin;
+with GDNative.Strings;
 with GDNative.Context;
 with GDNative.Console;
 with GDNative.Exceptions;
@@ -16,13 +17,14 @@ package body GDNative.Objects is
   package ICS renames Interfaces.C.Strings;
   package AE  renames Ada.Exceptions;
 
-  INVALID_REGISTRATION : constant Wide_String := "Calling non-overridden instance method.";
+  INVALID_REGISTRATION : constant Wide_String := "Calling default instance method implementation.";
 
   procedure Enter_Tree      (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
   procedure Exit_Tree       (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
   procedure Ready           (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
   procedure Process         (Self : in out Node; Delta_Time : in Long_Float) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
   procedure Physics_Process (Self : in out Node; Delta_Time : in Long_Float) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+ 
 
   -------------------------
   -- Object Registration --
@@ -91,10 +93,10 @@ package body GDNative.Objects is
       Name_Ptr      : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (New_Object'Tag));
       Reference_Ptr : ICS.chars_ptr := ICS.New_String ("Reference");
     begin
-      pragma Assert (Context.Core_Initialized,         "Please run Context.GDNative_Initialize");
-      pragma Assert (Context.Nativescript_Initialized, "Please run Context.Nativescript_Initialize");
+      pragma Assert (Context.Core_Initialized,         CORE_UNINITIALIZED_ASSERT);
+      pragma Assert (Context.Nativescript_Initialized, NATIVESCRIP_UNINITIALIZED_ASSERT);
 
-      Console.Put ("Registering Class: " & To_Wide (Ada.Tags.External_Tag (New_Object'Tag)));
+      Console.Put ("Registering Class: " & Strings.To_Wide (Ada.Tags.External_Tag (New_Object'Tag)));
 
       Context.Nativescript_Api.godot_nativescript_register_class (
         Context.Nativescript_Ptr, 
@@ -282,10 +284,10 @@ package body GDNative.Objects is
       Name_Ptr        : ICS.chars_ptr := ICS.New_String (Ada.Tags.External_Tag (New_Node'tag));
       Method_Name_Ptr : ICS.chars_ptr := ICS.New_String (Method_Name);
     begin
-      pragma Assert (Context.Core_Initialized,         "Please run Context.GDNative_Initialize");
-      pragma Assert (Context.Nativescript_Initialized, "Please run Context.Nativescript_Initialize");
+      pragma Assert (Context.Core_Initialized,         CORE_UNINITIALIZED_ASSERT);
+      pragma Assert (Context.Nativescript_Initialized, NATIVESCRIP_UNINITIALIZED_ASSERT);
 
-      Console.Put (To_Wide ("Registering Method: " & Ada.Tags.External_Tag (New_Node'Tag) & "." & Method_Name));
+      Console.Put (Strings.To_Wide ("Registering Method: " & Ada.Tags.External_Tag (New_Node'Tag) & "." & Method_Name));
 
       Context.Nativescript_Api.godot_nativescript_register_method (
         Context.Nativescript_Ptr,

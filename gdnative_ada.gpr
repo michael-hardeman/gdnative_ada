@@ -21,7 +21,12 @@ library project GDNative_Ada is
                              "GDNative.Tokenizer",
                              "GDNative.Exceptions",
                              "GDNative.Console",
-                             "GDNative.Objects");
+                             "GDNative.Math",
+                             "GDNative.Strings",
+                             "GDNative.Variants",
+                             "GDNative.Objects",
+                             "GDNative.Input",
+                             "GDNative.Input_Map");
 
   Switch_Compiler := ("-gnat2020"); -- Use Gnat2012 ada syntax rules
 

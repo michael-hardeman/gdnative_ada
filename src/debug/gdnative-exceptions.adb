@@ -10,6 +10,7 @@ with GNAT.Traceback.Symbolic;
 
 with GDNative.Tokenizer;
 with GDNative.Context;
+with GDNative.Strings;
 
 package body GDNative.Exceptions is
 
@@ -65,7 +66,7 @@ package body GDNative.Exceptions is
   -- Put Warning --
   -----------------
   procedure Put_Warning (Message : in Wide_String) is
-    Description : ICS.chars_ptr := ICS.New_String (To_Str (Message));
+    Description : ICS.chars_ptr := ICS.New_String (Strings.To_Str (Message));
     Report      : Error_Report;
   begin
     pragma Assert (Context.Core_Initialized, "Please run Context.GDNative_Initialize");

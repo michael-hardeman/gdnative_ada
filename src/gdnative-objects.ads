@@ -19,7 +19,7 @@ package GDNative.Objects is
   procedure Ready           (Self : in out Node);
   procedure Process         (Self : in out Node; Delta_Time : in Long_Float);
   procedure Physics_Process (Self : in out Node; Delta_Time : in Long_Float);
-
+  
   -------------------------
   -- Object Registration --
   -------------------------

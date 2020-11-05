@@ -1,19 +1,25 @@
 with Interfaces.C;
 with Interfaces.C.Strings;
 
-with GDNative.Thin;
 with GDNative.Context;
+with GDNative.Console;
+with GDNative.Exceptions;
+with GDNative.Variants;
+with GDNative.Input_Map;
 
 package body GDNative.Input is
 
+  use GDNative.Thin;
+  
+  package IC  renames Interfaces.C;
   package ICS renames Interfaces.C.Strings;
 
   ----------------------
   -- Get_Input_Method --
   ----------------------
-  function Get_Input_Method (Input_Class_Name : ICS.chars_ptr; Method_Name : in String) return access Thin.godot_method_bind is
+  function Get_Input_Method (Input_Class_Name : in ICS.chars_ptr; Method_Name : in String) return access godot_method_bind is
     C_Method_Name : ICS.chars_ptr := ICS.New_String (Method_Name);
-    Result : access Thin.godot_method_bind;
+    Result        : access godot_method_bind;
   begin
     Result := Context.Core_Api.godot_method_bind_get_method (Input_Class_Name, C_Method_Name);
     ICS.Free (C_Method_Name);
@@ -26,6 +32,9 @@ package body GDNative.Input is
   procedure Initialize is
     Input_Class_Name : ICS.chars_ptr := ICS.New_String ("Input");
   begin
+    pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (not Input_Singleton.Initialized, INPUT_MULTIPLE_INITIALIZATION_ASSERT);
+
     Input_Singleton.Handle                           := Context.Core_Api.godot_global_get_singleton (Input_Class_Name);
     Input_Singleton.Action_Press                     := Get_Input_Method (Input_Class_Name, "action_press");
     Input_Singleton.Action_Release                   := Get_Input_Method (Input_Class_Name, "action_release");
@@ -67,48 +76,159 @@ package body GDNative.Input is
     Input_Singleton.Stop_Joy_Vibration               := Get_Input_Method (Input_Class_Name, "stop_joy_vibration");
     Input_Singleton.Vibrate_Handheld                 := Get_Input_Method (Input_Class_Name, "vibrate_handheld");
     Input_Singleton.Warp_Mouse_Position              := Get_Input_Method (Input_Class_Name, "warp_mouse_position");
+    Input_Singleton.Initialized                      := True;
     ICS.Free (Input_Class_Name);
   end;
 
+  --------------
+  -- Finalize --
+  --------------
+  procedure Finalize is begin
+    pragma Assert (Input_Singleton.Initialized, INPUT_EARLY_FINALIZE_ASSERT);
+
+    Input_Singleton.Initialized                      := False;
+    Input_Singleton.Handle                           := Null_Godot_Object;
+    Input_Singleton.Action_Press                     := null;
+    Input_Singleton.Action_Release                   := null;
+    Input_Singleton.Add_Joy_Mapping                  := null;
+    Input_Singleton.Get_Accelerometer                := null;
+    Input_Singleton.Get_Action_Strength              := null;
+    Input_Singleton.Get_Connected_Joypads            := null;
+    Input_Singleton.Get_Current_Cursor_Shape         := null;
+    Input_Singleton.Get_Gravity                      := null;
+    Input_Singleton.Get_Gyroscope                    := null;
+    Input_Singleton.Get_Joy_Axis                     := null;
+    Input_Singleton.Get_Joy_Axis_Index_From_String   := null;
+    Input_Singleton.Get_Joy_Axis_String              := null;
+    Input_Singleton.Get_Joy_Button_Index_From_String := null;
+    Input_Singleton.Get_Joy_Button_String            := null;
+    Input_Singleton.Get_Joy_Guid                     := null;
+    Input_Singleton.Get_Joy_Name                     := null;
+    Input_Singleton.Get_Joy_Vibration_Duration       := null;
+    Input_Singleton.Get_Joy_Vibration_Strength       := null;
+    Input_Singleton.Get_Last_Mouse_Speed             := null;
+    Input_Singleton.Get_Magnetometer                 := null;
+    Input_Singleton.Get_Mouse_Button_Mask            := null;
+    Input_Singleton.Get_Mouse_Mode                   := null;
+    Input_Singleton.Is_Action_Just_Pressed           := null;
+    Input_Singleton.Is_Action_Just_Released          := null;
+    Input_Singleton.Is_Action_Pressed                := null;
+    Input_Singleton.Is_Joy_Button_Pressed            := null;
+    Input_Singleton.Is_Joy_Known                     := null;
+    Input_Singleton.Is_Key_Pressed                   := null;
+    Input_Singleton.Is_Mouse_Button_Pressed          := null;
+    Input_Singleton.Joy_Connection_Changed           := null;
+    Input_Singleton.Parse_Input_Event                := null;
+    Input_Singleton.Remove_Joy_Mapping               := null;
+    Input_Singleton.Set_Custom_Mouse_Cursor          := null;
+    Input_Singleton.Set_Default_Cursor_Shape         := null;
+    Input_Singleton.Set_Mouse_Mode                   := null;
+    Input_Singleton.Set_Use_Accumulated_Input        := null;
+    Input_Singleton.Start_Joy_Vibration              := null;
+    Input_Singleton.Stop_Joy_Vibration               := null;
+    Input_Singleton.Vibrate_Handheld                 := null;
+    Input_Singleton.Warp_Mouse_Position              := null;
+  end;
+
   ------------------
-  -- Action_Press --
+  -- Action Press --
   ------------------
-  procedure Action_Press (Action : in String; Strength : in Long_Float := 1.0) is
+  procedure Action_Press (Action : in Wide_String; Strength : in Percentage := 1.0) is
+    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (others => null);
+    Action_Param   : aliased godot_variant;
+    Strength_Param : aliased godot_variant;
+    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result         : godot_variant;
   begin
-    raise Program_Error with "Unimplemented Feature";
+    if not Input_Map.Has_Action (Action) then
+      Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
+    end if;
+
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+
+    Action_Param   := Variants.To_Godot (Action);
+    Strength_Param := Variants.To_Godot (Long_Float (Strength));
+
+    Arguments (1) := Action_Param'unchecked_access;
+    Arguments (2) := Strength_Param'unchecked_access;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Action_Press,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access, 
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   --------------------
   -- Action_Release --
   --------------------
-  procedure Action_Release (Action : in String) is
+  procedure Action_Release (Action : in Wide_String) is
+    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (others => null);
+    Action_Param   : aliased godot_variant;
+    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result         : godot_variant;
   begin
-    raise Program_Error with "Unimplemented Feature";
+    if not Input_Map.Has_Action (Action) then
+      Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
+    end if;
+
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+
+    Action_Param := Variants.To_Godot (Action);
+
+    Arguments (1) := Action_Param'unchecked_access;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Action_Press,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access, 
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   ---------------------
   -- Add_Joy_Mapping --
   ---------------------
-  procedure Add_Joy_Mapping (Mapping : in String; Update_Existing : in Boolean := False) is
+  procedure Add_Joy_Mapping (Mapping : in Wide_String; Update_Existing : in Boolean := False) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   -----------------------
   -- Get_Accelerometer --
   -----------------------
-  function Get_Accelerometer return Vector3 is
-  begin
-    raise Program_Error with "Unimplemented Feature";
-    return Null_Vector3;
+  function Get_Accelerometer return Math.Vector3 is begin
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
+    return Math.New_Vector3 (0.0, 0.0, 0.0);
   end;
 
   -------------------------
   -- Get_Action_Strength --
   -------------------------
-  function Get_Action_Strength (Action : String) return Long_Float is
+  function Get_Action_Strength (Action : in Wide_String) return Percentage is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return 0.0;
   end;
 
@@ -117,7 +237,9 @@ package body GDNative.Input is
   ---------------------------
   function Get_Connected_Joypads return JoypadArray is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return Null_JoypadArray;
   end;
 
@@ -126,125 +248,148 @@ package body GDNative.Input is
   ------------------------------
   function Get_Current_Cursor_Shape return CursorShape is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return Null_CursorShape;
   end;
 
   -----------------
   -- Get_Gravity --
   -----------------
-  function Get_Gravity return Vector3 is
-  begin
-    raise Program_Error with "Unimplemented Feature";
-    return Null_Vector3;
+  function Get_Gravity return Math.Vector3 is begin
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
+    return Math.New_Vector3 (0.0, 0.0, 0.0);
   end;
 
   -------------------
   -- Get_Gyroscope --
   -------------------
-  function Get_Gyroscope return Vector3 is
-  begin
-    raise Program_Error with "Unimplemented Feature";
-    return Null_Vector3;
+  function Get_Gyroscope return Math.Vector3 is begin
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
+    return Math.New_Vector3 (0.0, 0.0, 0.0);
   end;
 
   ------------------
   -- Get_Joy_Axis --
   ------------------
-  function Get_Joy_Axis (Device : Integer; Axis : Integer) return Long_Float is
+  function Get_Joy_Axis (Device : in Integer; Axis : in Integer) return Long_Float is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return 0.0;
   end;
 
   ------------------------------------
   -- Get_Joy_Axis_Index_From_String --
   ------------------------------------
-  function Get_Joy_Axis_Index_From_String (Axis : String) return Integer is
+  function Get_Joy_Axis_Index_From_String (Axis : in String) return Integer is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return 0;
   end;
 
   -------------------------
   -- Get_Joy_Axis_String --
   -------------------------
-  function Get_Joy_Axis_String (Axis_Index : Integer) return String is
+  function Get_Joy_Axis_String (Axis_Index : in Integer) return String is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return "";
   end;
 
   --------------------------------------
   -- Get_Joy_Button_Index_From_String --
   --------------------------------------
-  function Get_Joy_Button_Index_From_String (Button : String) return Integer is
+  function Get_Joy_Button_Index_From_String (Button : in String) return Integer is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return 0;
   end;
 
   ---------------------------
   -- Get_Joy_Button_String --
   ---------------------------
-  function Get_Joy_Button_String (Button_Index : Integer) return String is
+  function Get_Joy_Button_String (Button_Index : in Integer) return String is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return "";
   end;
 
   ------------------
   -- Get_Joy_Guid --
   ------------------
-  function Get_Joy_Guid (Device : Integer) return String is
+  function Get_Joy_Guid (Device : in Integer) return String is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return "";
   end;
 
   ------------------
   -- Get_Joy_Name --
   ------------------
-  function Get_Joy_Name (Device : Integer) return String is
+  function Get_Joy_Name (Device : in Integer) return String is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return "";
   end;
 
   --------------------------------
   -- Get_Joy_Vibration_Duration --
   --------------------------------
-  function Get_Joy_Vibration_Duration (Device : Integer) return Long_Float is
+  function Get_Joy_Vibration_Duration (Device : in Integer) return Long_Float is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return 0.0;
   end;
 
   --------------------------------
   -- Get_Joy_Vibration_Strength --
   --------------------------------
-  function Get_Joy_Vibration_Strength (Device : Integer) return Vector2 is
-  begin
-    raise Program_Error with "Unimplemented Feature";
-    return Null_Vector2;
+  function Get_Joy_Vibration_Strength (Device : in Integer) return Math.Vector2 is begin
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
+    return Math.New_Vector2 (0.0, 0.0);
   end;
 
   --------------------------
   -- Get_Last_Mouse_Speed --
   --------------------------
-  function Get_Last_Mouse_Speed return Vector2 is
-  begin
-    raise Program_Error with "Unimplemented Feature";
-    return Null_Vector2;
+  function Get_Last_Mouse_Speed return Math.Vector2 is begin
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
+    return Math.New_Vector2 (0.0, 0.0);
   end;
 
   ----------------------
   -- Get_Magnetometer --
   ----------------------
-  function Get_Magnetometer return Vector3 is
-  begin
-    raise Program_Error with "Unimplemented Feature";
-    return Null_Vector3;
+  function Get_Magnetometer return Math.Vector3 is begin
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
+    return Math.New_Vector3 (0.0, 0.0, 0.0);
   end;
 
   ---------------------------
@@ -252,7 +397,9 @@ package body GDNative.Input is
   ---------------------------
   function Get_Mouse_Button_Mask return Integer is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return 0;
   end;
 
@@ -261,159 +408,197 @@ package body GDNative.Input is
   --------------------
   function Get_Mouse_Mode return MouseMode is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return Null_MouseMode;
   end;
 
   ----------------------------
   -- Is_Action_Just_Pressed --
   ----------------------------
-  function Is_Action_Just_Pressed (Action : String) return Boolean is
+  function Is_Action_Just_Pressed (Action : in String) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   -----------------------------
   -- Is_Action_Just_Released --
   -----------------------------
-  function Is_Action_Just_Released (Action : String) return Boolean is
+  function Is_Action_Just_Released (Action : in String) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   -----------------------
   -- Is_Action_Pressed --
   -----------------------
-  function Is_Action_Pressed (Action : String) return Boolean is
+  function Is_Action_Pressed (Action : in String) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   ---------------------------
   -- Is_Joy_Button_Pressed --
   ---------------------------
-  function Is_Joy_Button_Pressed (Device : Integer; Button : Integer) return Boolean is
+  function Is_Joy_Button_Pressed (Device : in Integer; Button : in Integer) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   ------------------
   -- Is_Joy_Known --
   ------------------
-  function Is_Joy_Known (Device : Integer) return Boolean is
+  function Is_Joy_Known (Device : in Integer) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   --------------------
   -- Is_Key_Pressed --
   --------------------
-  function Is_Key_Pressed (Scancode : Integer) return Boolean is
+  function Is_Key_Pressed (Scancode : in Integer) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   -----------------------------
   -- Is_Mouse_Button_Pressed --
   -----------------------------
-  function Is_Mouse_Button_Pressed (Button : Integer) return Boolean is
+  function Is_Mouse_Button_Pressed (Button : in Integer) return Boolean is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
     return False;
   end;
 
   ----------------------------
   -- Joy_Connection_Changed --
   ----------------------------
-  procedure Joy_Connection_Changed (Device : Integer; Connected : Boolean; Name : String; Guid : String) is
+  procedure Joy_Connection_Changed (Device : in Integer; Connected : in Boolean; Name : in String; Guid : in String) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   -----------------------
   -- Parse_Input_Event --
   -----------------------
-  procedure Parse_Input_Event (Event : InputEvent) is
+  procedure Parse_Input_Event (Event : in InputEvent) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   ------------------------
   -- Remove_Joy_Mapping --
   ------------------------
-  procedure Remove_Joy_Mapping (Guid : String) is
+  procedure Remove_Joy_Mapping (Guid : in String) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   -----------------------------
   -- Set_Custom_Mouse_Cursor --
   -----------------------------
-  procedure Set_Custom_Mouse_Cursor (Image : Resource; Shape : CursorShape; Hotspot : Vector2) is -- CursorShape := 0; Vector2 := Vector2 (0, 0)
+  procedure Set_Custom_Mouse_Cursor (Image : in Resource; Shape : in CursorShape; Hotspot : in Math.Vector2) is -- CursorShape := 0; Math.Vector2 := Math.Vector2 (0, 0)
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   ------------------------------
   -- Set_Default_Cursor_Shape --
   ------------------------------
-  procedure Set_Default_Cursor_Shape (Shape : CursorShape) is -- CursorShape := 0
+  procedure Set_Default_Cursor_Shape (Shape : in CursorShape) is -- CursorShape := 0
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   --------------------
   -- Set_Mouse_Mode --
   --------------------
-  procedure Set_Mouse_Mode (Mode : MouseMode) is
+  procedure Set_Mouse_Mode (Mode : in MouseMode) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   -------------------------------
   -- Set_Use_Accumulated_Input --
   -------------------------------
-  procedure Set_Use_Accumulated_Input (Enable : Boolean) is
+  procedure Set_Use_Accumulated_Input (Enable : in Boolean) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   -------------------------
   -- Start_Joy_Vibration --
   -------------------------
-  procedure Start_Joy_Vibration (Device : Integer; Weak_Magnitude : Long_Float; Strong_Magnitude : Long_Float; Duration : Long_Float := 0.0) is
+  procedure Start_Joy_Vibration (Device : in Integer; Weak_Magnitude : in Long_Float; Strong_Magnitude : in Long_Float; Duration : in Long_Float := 0.0) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   ------------------------
   -- Stop_Joy_Vibration --
   ------------------------
-  procedure Stop_Joy_Vibration (Device : Integer) is
+  procedure Stop_Joy_Vibration (Device : in Integer) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   ----------------------
   -- Vibrate_Handheld --
   ----------------------
-  procedure Vibrate_Handheld (Duration_Ms : Integer := 500) is
+  procedure Vibrate_Handheld (Duration_Ms : in Integer := 500) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
   -------------------------
   -- Warp_Mouse_Position --
   -------------------------
-  procedure Warp_Mouse_Position (To : Vector2) is
+  procedure Warp_Mouse_Position (To : in Math.Vector2) is
   begin
-    raise Program_Error with "Unimplemented Feature";
+    pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
+    pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
+    raise Unimplemented_Feature;
   end;
 
 end;

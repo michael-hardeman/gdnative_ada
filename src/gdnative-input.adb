@@ -447,7 +447,7 @@ package body GDNative.Input is
   -- Get_Joy_Axis_String --
   -------------------------
   function Get_Joy_Axis_String (Axis_Index : in Long_Integer) return Wide_String is
-    Axis_Param  : aliased godot_variant := Variants.To_Godot (Axis);
+    Axis_Param  : aliased godot_variant := Variants.To_Godot (Axis_Index);
     Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Axis_Param'unchecked_access);
     Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result      : aliased godot_variant;
@@ -1096,7 +1096,7 @@ package body GDNative.Input is
   -- Set_Mouse_Mode --
   --------------------
   procedure Set_Mouse_Mode (Mode : in Mouse_Mode_Kind) is
-    Temp        : Long_Integer := Mouse_Mode_Kind'Pos (Shape);
+    Temp        : Long_Integer := Mouse_Mode_Kind'Pos (Mode);
     Mode_Param  : aliased godot_variant := Variants.To_Godot (Temp);
     Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Mode_Param'unchecked_access);
     Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
@@ -1123,7 +1123,7 @@ package body GDNative.Input is
   -- Set_Use_Accumulated_Input --
   -------------------------------
   procedure Set_Use_Accumulated_Input (Enable : in Boolean) is
-    Enable_Param : aliased godot_variant := Variants.To_Godot (Temp);
+    Enable_Param : aliased godot_variant := Variants.To_Godot (Enable);
     Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Enable_Param'unchecked_access);
     Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result       : aliased godot_variant;
@@ -1150,8 +1150,8 @@ package body GDNative.Input is
   -------------------------
   procedure Start_Joy_Vibration (Device : in Long_Integer; Weak_Magnitude : in Long_Float; Strong_Magnitude : in Long_Float; Duration : in Long_Float := 0.0) is
     Device_Param   : aliased godot_variant := Variants.To_Godot (Device);
-    Weak_Param     : aliased godot_variant := Variants.To_Godot (Weak);
-    Strong_Param   : aliased godot_variant := Variants.To_Godot (Strong);
+    Weak_Param     : aliased godot_variant := Variants.To_Godot (Weak_Magnitude);
+    Strong_Param   : aliased godot_variant := Variants.To_Godot (Strong_Magnitude);
     Duration_Param : aliased godot_variant := Variants.To_Godot (Duration);
     Arguments      : aliased godot_variant_ptr_array (1 .. 4) := (Device_Param'unchecked_access, Weak_Param'unchecked_access, Strong_Param'unchecked_access, Duration_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
@@ -1179,7 +1179,7 @@ package body GDNative.Input is
   ------------------------
   procedure Stop_Joy_Vibration (Device : in Long_Integer) is
     Device_Param   : aliased godot_variant := Variants.To_Godot (Device);
-    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (Device_Param'unchecked_access);
+    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (1 => Device_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result         : aliased godot_variant;
   begin
@@ -1205,7 +1205,7 @@ package body GDNative.Input is
   ----------------------
   procedure Vibrate_Handheld (Duration_Ms : in Long_Integer := 500) is
     Duration_Param : aliased godot_variant := Variants.To_Godot (Duration_Ms);
-    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (Duration_Param'unchecked_access);
+    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (1 => Duration_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result         : aliased godot_variant;
   begin
@@ -1231,7 +1231,7 @@ package body GDNative.Input is
   -------------------------
   procedure Warp_Mouse_Position (To : in Math.Vector2) is
     To_Param    : aliased godot_variant := Variants.To_Godot (To);
-    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (Duration_Param'unchecked_access);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => To_Param'unchecked_access);
     Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result      : aliased godot_variant;
   begin

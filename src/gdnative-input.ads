@@ -88,7 +88,7 @@ package GDNative.Input is
   procedure Set_Default_Cursor_Shape (Shape : in Cursor_Shape_Kind := Arrow_Shape);
   procedure Set_Mouse_Mode (Mode : in Mouse_Mode_Kind);
   procedure Set_Use_Accumulated_Input (Enable : in Boolean);
-  procedure Start_Joy_Vibration (Device : in Integer; Weak_Magnitude : in Long_Float; Strong_Magnitude : in Long_Float; Duration : in Long_Float := 0.0);
+  procedure Start_Joy_Vibration (Device : in Long_Integer; Weak_Magnitude : in Long_Float; Strong_Magnitude : in Long_Float; Duration : in Long_Float := 0.0);
   procedure Stop_Joy_Vibration (Device : in Long_Integer);
   procedure Vibrate_Handheld (Duration_Ms : in Long_Integer := 500);
   procedure Warp_Mouse_Position (To : in Math.Vector2);

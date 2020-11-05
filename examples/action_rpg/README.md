@@ -2,8 +2,8 @@
 
 ---
 
-This is a verions of [Heartbeast's Action RPG youtube tutorial](https://www.youtube.com/watch?v=mAbG8Oi-SvQ&list=PL9FzW-m48fn2SlrW0KoLT4n5egNdX-W9a).
-
+This is a conversion of [Heartbeast's Action RPG youtube tutorial](https://www.youtube.com/watch?v=mAbG8Oi-SvQ&list=PL9FzW-m48fn2SlrW0KoLT4n5egNdX-W9a) to Ada using GDNative.
+s
 ### License
 
 [Heartbeast's MIT Licence](https://github.com/uheartbeast/youtube-tutorials/blob/50fa9c2b8c6349a607a4dd731da1d6c2bc73f48e/LICENSE)

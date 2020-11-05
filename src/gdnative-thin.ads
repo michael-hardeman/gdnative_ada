@@ -1865,7 +1865,7 @@ package GDNative.Thin is
       godot_string_name_operator_equal : access function (arg1 : access constant godot_string_name; arg2 : access constant godot_string_name) return godot_bool;  -- gdnative_api_struct.gen.h:945
       godot_string_name_operator_less : access function (arg1 : access constant godot_string_name; arg2 : access constant godot_string_name) return godot_bool;  -- gdnative_api_struct.gen.h:946
       godot_string_name_destroy : access procedure (arg1 : access godot_string_name);  -- gdnative_api_struct.gen.h:947
-      godot_object_destroy : access procedure (arg1 : System.Address);  -- gdnative_api_struct.gen.h:948
+      godot_object_destroy : access procedure (arg1 : godot_object);  -- gdnative_api_struct.gen.h:948
       godot_global_get_singleton : access function (arg1 : ICS.chars_ptr) return godot_object;  -- gdnative_api_struct.gen.h:949
       godot_method_bind_get_method : access function (p_classname : ICS.chars_ptr; p_methodname : ICS.chars_ptr) return access godot_method_bind;  -- gdnative_api_struct.gen.h:950
       godot_method_bind_ptrcall : access procedure

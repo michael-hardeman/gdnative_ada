@@ -45,4 +45,7 @@ package body GDNative.Math is
     return To_Ada (Result);
   end;
 
+  function Zero return Vector2 is (New_Vector2 (0.0, 0.0));
+  function Zero return Vector3 is (New_Vector3 (0.0, 0.0, 0.0));
+
 end;

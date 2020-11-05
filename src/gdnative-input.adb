@@ -1,4 +1,3 @@
-with Interfaces.C;
 with Interfaces.C.Strings;
 
 with GDNative.Context;
@@ -11,7 +10,6 @@ package body GDNative.Input is
 
   use GDNative.Thin;
   
-  package IC  renames Interfaces.C;
   package ICS renames Interfaces.C.Strings;
 
   ----------------------
@@ -134,11 +132,11 @@ package body GDNative.Input is
   -- Action Press --
   ------------------
   procedure Action_Press (Action : in Wide_String; Strength : in Percentage := 1.0) is
-    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (others => null);
-    Action_Param   : aliased godot_variant;
-    Strength_Param : aliased godot_variant;
+    Action_Param   : aliased godot_variant := Variants.To_Godot (Action);
+    Strength_Param : aliased godot_variant := Variants.To_Godot (Long_Float (Strength));
+    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (Action_Param'unchecked_access, Strength_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
-    Result         : godot_variant;
+    Result         : aliased godot_variant;
   begin
     if not Input_Map.Has_Action (Action) then
       Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
@@ -146,12 +144,6 @@ package body GDNative.Input is
 
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-
-    Action_Param   := Variants.To_Godot (Action);
-    Strength_Param := Variants.To_Godot (Long_Float (Strength));
-
-    Arguments (1) := Action_Param'unchecked_access;
-    Arguments (2) := Strength_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Singleton.Action_Press,
@@ -171,10 +163,10 @@ package body GDNative.Input is
   -- Action_Release --
   --------------------
   procedure Action_Release (Action : in Wide_String) is
-    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (others => null);
-    Action_Param   : aliased godot_variant;
-    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
-    Result         : godot_variant;
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     if not Input_Map.Has_Action (Action) then
       Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
@@ -183,14 +175,10 @@ package body GDNative.Input is
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
 
-    Action_Param := Variants.To_Godot (Action);
-
-    Arguments (1) := Action_Param'unchecked_access;
-
     Result := Context.Core_Api.godot_method_bind_call (
-      Input_Singleton.Action_Press,
+      Input_Singleton.Action_Release,
       Input_Singleton.Handle, 
-      Arguments (1)'unchecked_access, 
+      Arguments (1)'unchecked_access,
       Arguments'Length, 
       Call_Result'access);
 
@@ -204,39 +192,102 @@ package body GDNative.Input is
   ---------------------
   -- Add_Joy_Mapping --
   ---------------------
+  -- Mapping is an SDL2 gamepad mapping string
+  -- Get one from this tool: https://generalarcade.com/gamepadtool/
+  -- Todo: create a package for generating these strings
   procedure Add_Joy_Mapping (Mapping : in Wide_String; Update_Existing : in Boolean := False) is
+    Mapping_Param : aliased godot_variant := Variants.To_Godot (Mapping);
+    Update_Param  : aliased godot_variant := Variants.To_Godot (Update_Existing);
+    Arguments     : aliased godot_variant_ptr_array (1 .. 2) := (Mapping_Param'unchecked_access, Update_Param'unchecked_access);
+    Call_Result   : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result        : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Add_Joy_Mapping,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access, 
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   -----------------------
   -- Get_Accelerometer --
   -----------------------
-  function Get_Accelerometer return Math.Vector3 is begin
+  function Get_Accelerometer return Math.Vector3 is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+  begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Math.New_Vector3 (0.0, 0.0, 0.0);
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Accelerometer,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Math.Zero;
   end;
 
   -------------------------
   -- Get_Action_Strength --
   -------------------------
   function Get_Action_Strength (Action : in Wide_String) return Percentage is
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
+    Temp         : Long_Float;
   begin
+    if not Input_Map.Has_Action (Action) then
+      Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
+    end if;
+
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return 0.0;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Action_Strength,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    Temp := Variants.To_Ada (Result'access);
+    return Percentage (Temp);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return 0.0;
   end;
 
   ---------------------------
   -- Get_Connected_Joypads --
   ---------------------------
-  function Get_Connected_Joypads return JoypadArray is
-  begin
+  -- TODO: JoypadArray
+  function Get_Connected_Joypads return JoypadArray is begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
     raise Unimplemented_Feature;
@@ -246,266 +297,733 @@ package body GDNative.Input is
   ------------------------------
   -- Get_Current_Cursor_Shape --
   ------------------------------
-  function Get_Current_Cursor_Shape return CursorShape is
+  function Get_Current_Cursor_Shape return Cursor_Shape_Kind is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+    Temp        : Natural;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Null_CursorShape;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Current_Cursor_Shape,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    Temp := Variants.To_Ada (Result'access);
+    return Cursor_Shape_Kind'Val (Temp);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Arrow_Shape;
   end;
 
   -----------------
   -- Get_Gravity --
   -----------------
-  function Get_Gravity return Math.Vector3 is begin
+  function Get_Gravity return Math.Vector3 is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+  begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Math.New_Vector3 (0.0, 0.0, 0.0);
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Gravity,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Math.Zero;
   end;
 
   -------------------
   -- Get_Gyroscope --
   -------------------
-  function Get_Gyroscope return Math.Vector3 is begin
+  function Get_Gyroscope return Math.Vector3 is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+  begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Math.New_Vector3 (0.0, 0.0, 0.0);
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Gyroscope,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Math.Zero;
   end;
 
   ------------------
   -- Get_Joy_Axis --
   ------------------
-  function Get_Joy_Axis (Device : in Integer; Axis : in Integer) return Long_Float is
+  function Get_Joy_Axis (Device : in Long_Integer; Axis : in Joypad_Axis_Kind) return Percentage is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Axis_Param   : aliased godot_variant := Variants.To_Godot (Long_Integer (Joypad_Axis_Kind'Pos (Axis)));
+    Arguments    : aliased godot_variant_ptr_array (1 .. 2) := (Device_Param'unchecked_access, Axis_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
+    Temp         : Long_Float;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return 0.0;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Axis,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access, 
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    Temp := Variants.To_Ada (Result'access);
+    return Percentage (Temp);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return 0.0;
   end;
 
   ------------------------------------
   -- Get_Joy_Axis_Index_From_String --
   ------------------------------------
-  function Get_Joy_Axis_Index_From_String (Axis : in String) return Integer is
+  function Get_Joy_Axis_Index_From_String (Axis : in Wide_String) return Long_Integer is
+    Axis_Param  : aliased godot_variant := Variants.To_Godot (Axis);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Axis_Param'unchecked_access);
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return 0;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Axis_Index_From_String,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return 0;
   end;
 
   -------------------------
   -- Get_Joy_Axis_String --
   -------------------------
-  function Get_Joy_Axis_String (Axis_Index : in Integer) return String is
+  function Get_Joy_Axis_String (Axis_Index : in Long_Integer) return Wide_String is
+    Axis_Param  : aliased godot_variant := Variants.To_Godot (Axis);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Axis_Param'unchecked_access);
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return "";
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Axis_String,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return "";
   end;
 
   --------------------------------------
   -- Get_Joy_Button_Index_From_String --
   --------------------------------------
-  function Get_Joy_Button_Index_From_String (Button : in String) return Integer is
+  function Get_Joy_Button_Index_From_String (Button : in Wide_String) return Long_Integer is 
+    Button_Param : aliased godot_variant := Variants.To_Godot (Button);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Button_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return 0;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Button_Index_From_String,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return 0;
   end;
 
   ---------------------------
   -- Get_Joy_Button_String --
   ---------------------------
-  function Get_Joy_Button_String (Button_Index : in Integer) return String is
+  function Get_Joy_Button_String (Button_Index : in Long_Integer) return Wide_String is
+    Button_Param : aliased godot_variant := Variants.To_Godot (Button_Index);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Button_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return "";
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Button_String,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return "";
   end;
 
   ------------------
   -- Get_Joy_Guid --
   ------------------
-  function Get_Joy_Guid (Device : in Integer) return String is
+  function Get_Joy_Guid (Device : in Long_Integer) return Wide_String is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Device_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return "";
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Guid,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return "";
   end;
 
   ------------------
   -- Get_Joy_Name --
   ------------------
-  function Get_Joy_Name (Device : in Integer) return String is
+  function Get_Joy_Name (Device : in Long_Integer) return Wide_String is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Device_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return "";
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Name,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return "";
   end;
 
   --------------------------------
   -- Get_Joy_Vibration_Duration --
   --------------------------------
-  function Get_Joy_Vibration_Duration (Device : in Integer) return Long_Float is
+  function Get_Joy_Vibration_Duration (Device : in Long_Integer) return Long_Float is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Device_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return 0.0;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Vibration_Duration,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return 0.0;
   end;
 
   --------------------------------
   -- Get_Joy_Vibration_Strength --
   --------------------------------
-  function Get_Joy_Vibration_Strength (Device : in Integer) return Math.Vector2 is begin
+  function Get_Joy_Vibration_Strength (Device : in Long_Integer) return Math.Vector2 is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Device_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
+  begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Math.New_Vector2 (0.0, 0.0);
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Joy_Vibration_Strength,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return Math.Zero;
   end;
 
   --------------------------
   -- Get_Last_Mouse_Speed --
   --------------------------
-  function Get_Last_Mouse_Speed return Math.Vector2 is begin
+  function Get_Last_Mouse_Speed return Math.Vector2 is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+  begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Math.New_Vector2 (0.0, 0.0);
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Last_Mouse_Speed,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Math.Zero;
   end;
 
   ----------------------
   -- Get_Magnetometer --
   ----------------------
-  function Get_Magnetometer return Math.Vector3 is begin
+  function Get_Magnetometer return Math.Vector3 is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+  begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Math.New_Vector3 (0.0, 0.0, 0.0);
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Magnetometer,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Math.Zero;
   end;
 
   ---------------------------
   -- Get_Mouse_Button_Mask --
   ---------------------------
-  function Get_Mouse_Button_Mask return Integer is
+  function Get_Mouse_Button_Mask return Long_Integer is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return 0;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Mouse_Button_Mask,
+      Input_Singleton.Handle, 
+      null, 
+      0, 
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return 0;
   end;
 
   --------------------
   -- Get_Mouse_Mode --
   --------------------
-  function Get_Mouse_Mode return MouseMode is
+  function Get_Mouse_Mode return Mouse_Mode_Kind is
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
+    Temp        : Natural;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return Null_MouseMode;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Get_Mouse_Mode,
+      Input_Singleton.Handle, 
+      null,
+      0,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    Temp := Variants.To_Ada (Result'access);
+    return Mouse_Mode_Kind'Val (Temp);
+  exception
+    when Error : others => 
+      Exceptions.Put_Error (Error);
+      return Visible_Mode;
   end;
 
   ----------------------------
   -- Is_Action_Just_Pressed --
   ----------------------------
-  function Is_Action_Just_Pressed (Action : in String) return Boolean is
+  function Is_Action_Just_Pressed (Action : in Wide_String) return Boolean is
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
+    if not Input_Map.Has_Action (Action) then
+      Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
+    end if;
+
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Action_Just_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   -----------------------------
   -- Is_Action_Just_Released --
   -----------------------------
-  function Is_Action_Just_Released (Action : in String) return Boolean is
+  function Is_Action_Just_Released (Action : in Wide_String) return Boolean is
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
+    if not Input_Map.Has_Action (Action) then
+      Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
+    end if;
+
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Action_Just_Released,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   -----------------------
   -- Is_Action_Pressed --
   -----------------------
-  function Is_Action_Pressed (Action : in String) return Boolean is
+  function Is_Action_Pressed (Action : in Wide_String) return Boolean is
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
+    if not Input_Map.Has_Action (Action) then
+      Exceptions.Put_Warning (Input_Map.INPUT_MAP_ACTION_DOES_NOT_EXIST & Action);
+    end if;
+
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Action_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   ---------------------------
   -- Is_Joy_Button_Pressed --
   ---------------------------
-  function Is_Joy_Button_Pressed (Device : in Integer; Button : in Integer) return Boolean is
+  function Is_Joy_Button_Pressed (Device : in Long_Integer; Button : in Long_Integer) return Boolean is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Button_Param : aliased godot_variant := Variants.To_Godot (Button);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 2) := (Device_Param'unchecked_access, Button_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Joy_Button_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   ------------------
   -- Is_Joy_Known --
   ------------------
-  function Is_Joy_Known (Device : in Integer) return Boolean is
+  function Is_Joy_Known (Device : in Long_Integer) return Boolean is
+    Device_Param : aliased godot_variant := Variants.To_Godot (Device);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Device_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Joy_Known,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   --------------------
   -- Is_Key_Pressed --
   --------------------
-  function Is_Key_Pressed (Scancode : in Integer) return Boolean is
+  function Is_Key_Pressed (Scancode : in Long_Integer) return Boolean is
+    Scancode_Param : aliased godot_variant := Variants.To_Godot (Scancode);
+    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (1 => Scancode_Param'unchecked_access);
+    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result         : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Key_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   -----------------------------
   -- Is_Mouse_Button_Pressed --
   -----------------------------
-  function Is_Mouse_Button_Pressed (Button : in Integer) return Boolean is
+  function Is_Mouse_Button_Pressed (Button : in Long_Integer) return Boolean is
+    Button_Param : aliased godot_variant := Variants.To_Godot (Button);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Button_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
-    return False;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Mouse_Button_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+
+    return Variants.To_Ada (Result'access);
+  exception
+    when Error : others =>
+      Exceptions.Put_Error (Error);
+      return False;
   end;
 
   ----------------------------
   -- Joy_Connection_Changed --
   ----------------------------
-  procedure Joy_Connection_Changed (Device : in Integer; Connected : in Boolean; Name : in String; Guid : in String) is
+  procedure Joy_Connection_Changed (Device : in Long_Integer; Connected : in Boolean; Name : in Wide_String; Guid : in Wide_String) is
+    Device_Param    : aliased godot_variant := Variants.To_Godot (Device);
+    Connected_Param : aliased godot_variant := Variants.To_Godot (Connected);
+    Name_Param      : aliased godot_variant := Variants.To_Godot (Name);
+    Guid_Param      : aliased godot_variant := Variants.To_Godot (Guid);
+    Arguments       : aliased godot_variant_ptr_array (1 .. 4) := (Device_Param'unchecked_access, Connected_Param'unchecked_access, Name_Param'unchecked_access, Guid_Param'unchecked_access);
+    Call_Result     : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result          : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Mouse_Button_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   -----------------------
   -- Parse_Input_Event --
   -----------------------
-  procedure Parse_Input_Event (Event : in InputEvent) is
-  begin
+  -- TODO: InputEvent
+  procedure Parse_Input_Event (Event : in InputEvent) is begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
     raise Unimplemented_Feature;
@@ -514,18 +1032,34 @@ package body GDNative.Input is
   ------------------------
   -- Remove_Joy_Mapping --
   ------------------------
-  procedure Remove_Joy_Mapping (Guid : in String) is
+  procedure Remove_Joy_Mapping (Guid : in Wide_String) is
+    Guid_Param  : aliased godot_variant := Variants.To_Godot (Guid);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Guid_Param'unchecked_access);
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Is_Mouse_Button_Pressed,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   -----------------------------
   -- Set_Custom_Mouse_Cursor --
   -----------------------------
-  procedure Set_Custom_Mouse_Cursor (Image : in Resource; Shape : in CursorShape; Hotspot : in Math.Vector2) is -- CursorShape := 0; Math.Vector2 := Math.Vector2 (0, 0)
-  begin
+  -- TODO: Resource
+  procedure Set_Custom_Mouse_Cursor (Image : in Resource; Shape : in Cursor_Shape_Kind := Arrow_Shape; Hotspot : in Math.Vector2 := Math.Zero) is begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
     raise Unimplemented_Feature;
@@ -534,71 +1068,188 @@ package body GDNative.Input is
   ------------------------------
   -- Set_Default_Cursor_Shape --
   ------------------------------
-  procedure Set_Default_Cursor_Shape (Shape : in CursorShape) is -- CursorShape := 0
+  procedure Set_Default_Cursor_Shape (Shape : in Cursor_Shape_Kind := Arrow_Shape) is
+    Temp        : Long_Integer := Cursor_Shape_Kind'Pos (Shape);
+    Shape_Param : aliased godot_variant := Variants.To_Godot (Temp);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Shape_Param'unchecked_access);
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Set_Default_Cursor_Shape,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   --------------------
   -- Set_Mouse_Mode --
   --------------------
-  procedure Set_Mouse_Mode (Mode : in MouseMode) is
+  procedure Set_Mouse_Mode (Mode : in Mouse_Mode_Kind) is
+    Temp        : Long_Integer := Mouse_Mode_Kind'Pos (Shape);
+    Mode_Param  : aliased godot_variant := Variants.To_Godot (Temp);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (1 => Mode_Param'unchecked_access);
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Set_Mouse_Mode,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   -------------------------------
   -- Set_Use_Accumulated_Input --
   -------------------------------
   procedure Set_Use_Accumulated_Input (Enable : in Boolean) is
+    Enable_Param : aliased godot_variant := Variants.To_Godot (Temp);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Enable_Param'unchecked_access);
+    Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Set_Use_Accumulated_Input,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   -------------------------
   -- Start_Joy_Vibration --
   -------------------------
-  procedure Start_Joy_Vibration (Device : in Integer; Weak_Magnitude : in Long_Float; Strong_Magnitude : in Long_Float; Duration : in Long_Float := 0.0) is
+  procedure Start_Joy_Vibration (Device : in Long_Integer; Weak_Magnitude : in Long_Float; Strong_Magnitude : in Long_Float; Duration : in Long_Float := 0.0) is
+    Device_Param   : aliased godot_variant := Variants.To_Godot (Device);
+    Weak_Param     : aliased godot_variant := Variants.To_Godot (Weak);
+    Strong_Param   : aliased godot_variant := Variants.To_Godot (Strong);
+    Duration_Param : aliased godot_variant := Variants.To_Godot (Duration);
+    Arguments      : aliased godot_variant_ptr_array (1 .. 4) := (Device_Param'unchecked_access, Weak_Param'unchecked_access, Strong_Param'unchecked_access, Duration_Param'unchecked_access);
+    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result         : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Start_Joy_Vibration,
+      Input_Singleton.Handle, 
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   ------------------------
   -- Stop_Joy_Vibration --
   ------------------------
-  procedure Stop_Joy_Vibration (Device : in Integer) is
+  procedure Stop_Joy_Vibration (Device : in Long_Integer) is
+    Device_Param   : aliased godot_variant := Variants.To_Godot (Device);
+    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (Device_Param'unchecked_access);
+    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result         : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Start_Joy_Vibration,
+      Input_Singleton.Handle,
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   ----------------------
   -- Vibrate_Handheld --
   ----------------------
-  procedure Vibrate_Handheld (Duration_Ms : in Integer := 500) is
+  procedure Vibrate_Handheld (Duration_Ms : in Long_Integer := 500) is
+    Duration_Param : aliased godot_variant := Variants.To_Godot (Duration_Ms);
+    Arguments      : aliased godot_variant_ptr_array (1 .. 1) := (Duration_Param'unchecked_access);
+    Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result         : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Vibrate_Handheld,
+      Input_Singleton.Handle,
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
   -------------------------
   -- Warp_Mouse_Position --
   -------------------------
   procedure Warp_Mouse_Position (To : in Math.Vector2) is
+    To_Param    : aliased godot_variant := Variants.To_Godot (To);
+    Arguments   : aliased godot_variant_ptr_array (1 .. 1) := (Duration_Param'unchecked_access);
+    Call_Result : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
+    Result      : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,    CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Singleton.Initialized, INPUT_UNINITIALIZED_ASSERT);
-    raise Unimplemented_Feature;
+
+    Result := Context.Core_Api.godot_method_bind_call (
+      Input_Singleton.Warp_Mouse_Position,
+      Input_Singleton.Handle,
+      Arguments (1)'unchecked_access,
+      Arguments'Length,
+      Call_Result'access);
+
+    if Call_Result /= GODOT_CALL_ERROR_CALL_OK then
+      raise Program_Error with Call_Result'Image;
+    end if;
+  exception
+    when Error : others => Exceptions.Put_Error (Error);
   end;
 
 end;

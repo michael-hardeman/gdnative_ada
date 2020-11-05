@@ -6,17 +6,16 @@ package GDNative.Input_Map is
   procedure Initialize;
   procedure Finalize;
 
-  -- TODO
-  type InputEvent is null record;
+  type InputEvent is null record; -- TODO: InputEvent
 
-  procedure Action_Add_Event    (Action : in Wide_String; Event : in InputEvent);
-  procedure Action_Erase_Event  (Action : in Wide_String; Event : in InputEvent);
+  procedure Action_Add_Event    (Action : in Wide_String; Event : in InputEvent); -- TODO: InputEvent
+  procedure Action_Erase_Event  (Action : in Wide_String; Event : in InputEvent); -- TODO: InputEvent
   procedure Action_Erase_Events (Action : in Wide_String);
-  function  Action_Has_Event    (Action : in Wide_String; Event : in InputEvent) return Boolean;
+  function  Action_Has_Event    (Action : in Wide_String; Event : in InputEvent) return Boolean; -- TODO: InputEvent
   procedure Action_Set_Deadzone (Action : in Wide_String; Deadzone : in Percentage);
   procedure Add_Action          (Action : in Wide_String; Deadzone : in Percentage := 0.5);
   procedure Erase_Action        (Action : in Wide_String);
-  procedure Event_Is_Action     (Event  : in InputEvent;  Action : in Wide_String);
+  procedure Event_Is_Action     (Event  : in InputEvent;  Action : in Wide_String); -- TODO: InputEvent
   function  Get_Action_List     (Action : in Wide_String) return Wide_String_Array;
   function  Get_Actions                                   return Wide_String_Array;
   function  Has_Action          (Action : in Wide_String) return Boolean;

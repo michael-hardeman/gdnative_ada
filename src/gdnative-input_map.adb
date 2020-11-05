@@ -76,6 +76,7 @@ package body GDNative.Input_Map is
   ----------------------
   -- Action Add Event --
   ----------------------
+  -- TODO: InputEvent
   procedure Action_Add_Event (Action : in Wide_String; Event : in InputEvent) is begin
     raise Unimplemented_Feature;
   end;
@@ -83,6 +84,7 @@ package body GDNative.Input_Map is
   ------------------------
   -- Action Erase Event --
   ------------------------
+  -- TODO: InputEvent
   procedure Action_Erase_Event (Action : in Wide_String; Event : in InputEvent) is begin
     raise Unimplemented_Feature;
   end;
@@ -91,20 +93,13 @@ package body GDNative.Input_Map is
   -- Action Erase Events --
   -------------------------
   procedure Action_Erase_Events (Action : in Wide_String) is
-    Arguments      : aliased Thin.godot_variant_ptr_array (1 .. 1) := (others => null);
-    C_Action       : IC.wchar_array := IC.To_C (Action);
-    Godot_Action   : aliased godot_string;
-    Action_Param   : aliased godot_variant;
+    Action_Param   : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments      : aliased Thin.godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result         : godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Map_Singleton.Initialized, INPUT_MAP_UNINITIALIZED_ASSERT);
-
-    Context.Core_Api.godot_string_new_with_wide_string (Godot_Action'access, C_Action (0)'access, C_Action'Length);
-    Context.Core_Api.godot_variant_new_string (Action_Param'access, Godot_Action'access);
-
-    Arguments (1) := Action_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Map_Singleton.Action_Erase_Events,
@@ -123,6 +118,7 @@ package body GDNative.Input_Map is
   ----------------------
   -- Action Has Event --
   ----------------------
+  -- TODO: InputEvent
   function Action_Has_Event (Action : in Wide_String; Event : in InputEvent) return Boolean is begin
     raise Unimplemented_Feature;
     return False;
@@ -132,24 +128,14 @@ package body GDNative.Input_Map is
   -- Action Set Deadzone --
   -------------------------
   procedure Action_Set_Deadzone (Action : in Wide_String; Deadzone : in Percentage) is
-    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (others => null);
-    C_Action       : IC.wchar_array := IC.To_C (Action);
-    Godot_Action   : aliased godot_string;
-    Action_Param   : aliased godot_variant;
-    Deadzone_Param : aliased godot_variant;
+    Action_Param   : aliased godot_variant := Variants.To_Godot (Action);
+    Deadzone_Param : aliased godot_variant := Variants.To_Godot (Long_Float (Deadzone));
+    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (Action_Param'unchecked_access, Deadzone_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result         : godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Map_Singleton.Initialized, INPUT_MAP_UNINITIALIZED_ASSERT);
-
-    Context.Core_Api.godot_string_new_with_wide_string (Godot_Action'access, C_Action (0)'access, C_Action'Length);
-    Context.Core_Api.godot_variant_new_string (Action_Param'access, Godot_Action'access);
-
-    Context.Core_Api.godot_variant_new_real (Deadzone_Param'access, IC.double (Deadzone));
-
-    Arguments (1) := Action_Param'unchecked_access;
-    Arguments (2) := Deadzone_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Map_Singleton.Action_Set_Deadzone,
@@ -169,20 +155,14 @@ package body GDNative.Input_Map is
   -- Add Action --
   ----------------
   procedure Add_Action (Action : in Wide_String; Deadzone : in Percentage := 0.5) is 
-    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (others => null);
-    Action_Param   : aliased godot_variant;
-    Deadzone_Param : aliased godot_variant;
+    Action_Param   : aliased godot_variant := Variants.To_Godot (Action);
+    Deadzone_Param : aliased godot_variant := Variants.To_Godot (Long_Float (Deadzone));
+    Arguments      : aliased godot_variant_ptr_array (1 .. 2) := (Action_Param'unchecked_access, Deadzone_Param'unchecked_access);
     Call_Result    : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result         : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Map_Singleton.Initialized, INPUT_MAP_UNINITIALIZED_ASSERT);
-
-    Action_Param   := Variants.To_Godot (Action);
-    Deadzone_Param := Variants.To_Godot (Long_Float (Deadzone));
-
-    Arguments (1) := Action_Param'unchecked_access;
-    Arguments (2) := Deadzone_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Map_Singleton.Add_Action,
@@ -202,17 +182,13 @@ package body GDNative.Input_Map is
   -- Erase Action --
   ------------------
   procedure Erase_Action (Action : in Wide_String) is
-    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (others => null);
-    Action_Param : aliased godot_variant;
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
     Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Map_Singleton.Initialized, INPUT_MAP_UNINITIALIZED_ASSERT);
-
-    Action_Param := Variants.To_Godot (Action);
-
-    Arguments (1) := Action_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Map_Singleton.Erase_Action,
@@ -231,6 +207,7 @@ package body GDNative.Input_Map is
   ---------------------
   -- Event Is Action --
   ---------------------
+  -- TODO: InputEvent
   procedure Event_Is_Action (Event : in InputEvent; Action : in Wide_String) is begin
     raise Unimplemented_Feature;
   end;
@@ -239,17 +216,13 @@ package body GDNative.Input_Map is
   -- Get Action List --
   ---------------------
   function Get_Action_List (Action : in Wide_String) return Wide_String_Array is
-    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (others => null);
-    Action_Param : aliased godot_variant;
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
     Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Map_Singleton.Initialized, INPUT_MAP_UNINITIALIZED_ASSERT);
-
-    Action_Param := Variants.To_Godot (Action);
-
-    Arguments (1) := Action_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Map_Singleton.Get_Action_List,
@@ -301,17 +274,13 @@ package body GDNative.Input_Map is
   -- Has Action --
   ----------------
   function Has_Action (Action : in Wide_String) return Boolean is
-    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (others => null);
-    Action_Param : aliased godot_variant;
+    Action_Param : aliased godot_variant := Variants.To_Godot (Action);
+    Arguments    : aliased godot_variant_ptr_array (1 .. 1) := (1 => Action_Param'unchecked_access);
     Call_Result  : aliased godot_variant_call_error := GODOT_CALL_ERROR_CALL_OK;
     Result       : aliased godot_variant;
   begin
     pragma Assert (Context.Core_Initialized,        CORE_UNINITIALIZED_ASSERT);
     pragma Assert (Input_Map_Singleton.Initialized, INPUT_MAP_UNINITIALIZED_ASSERT);
-
-    Action_Param := Variants.To_Godot (Action);
-
-    Arguments (1) := Action_Param'unchecked_access;
 
     Result := Context.Core_Api.godot_method_bind_call (
       Input_Map_Singleton.Has_Action,

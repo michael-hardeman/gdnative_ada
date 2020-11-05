@@ -32,6 +32,9 @@ package GDNative.Math is
   function To_Godot (Item : in Basis)       return Thin.godot_basis;
   function To_Godot (Item : in Transform)   return Thin.godot_transform;
 
+  function Zero return Vector2;
+  function Zero return Vector3;
+
   function New_Vector2 (X, Y    : in Float) return Vector2;
   function New_Vector3 (X, Y, Z : in Float) return Vector3;
 

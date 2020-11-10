@@ -36,8 +36,11 @@ package GDNative.Thin is
    GODOT_POOL_ARRAY_WRITE_ACCESS_SIZE : constant := 1;
 
    type godot_method_bind is private;
+   type godot_method_bind_ptr is access all godot_method_bind;
    type godot_aabb is private;
    type godot_array is private;
+   type godot_array_ptr is access all godot_array;
+   type godot_array_const_ptr is access constant godot_array;
    type godot_basis is private;
    type godot_color is private;
    type godot_dictionary is private;
@@ -54,12 +57,15 @@ package GDNative.Thin is
    type godot_rect2 is private;
    type godot_rid is private;
    type godot_string is private;
+   type godot_string_ptr is access all godot_string;
+   type godot_string_const_ptr is access constant godot_string;
    type godot_char_string is private;
    type godot_string_name is private;
    type godot_transform2d is private;
    type godot_transform is private;
    type godot_variant is private;
    type godot_variant_ptr is access all godot_variant;
+   type godot_variant_const_ptr is access constant godot_variant;
    type godot_vector2 is private;
    type godot_vector3 is private;
    type godot_pool_array_write_access is private;
@@ -250,7 +256,7 @@ package GDNative.Thin is
    end record;
    pragma Convention (C_Pass_By_Copy, godot_gdnative_api_struct);  -- ../gdnative/gdnative.h:234
 
-   package GDnative_Api_Struct_Pointers is new Interfaces.C.Pointers (
+   package GDNative_Api_Struct_Pointers is new Interfaces.C.Pointers (
       Index => IC.unsigned, 
       Element => godot_gdnative_api_struct_ptr,
       Element_Array => godot_gdnative_api_struct_ptr_array,
@@ -407,6 +413,7 @@ package GDNative.Thin is
    pragma Convention (C_Pass_By_Copy, godot_method_attributes);  -- ./nativescript/godot_nativescript.h:145
 
    type godot_variant_ptr_array is array (IC.unsigned range <>) of aliased godot_variant_ptr;
+   type godot_variant_const_ptr_array is array (IC.unsigned range <>) of aliased godot_variant_const_ptr;
 
    package Godot_Instance_Method_Args_Ptrs is new Interfaces.C.Pointers (
       Index => IC.unsigned, 
@@ -693,7 +700,6 @@ package GDNative.Thin is
    type godot_gdnative_ext_videodecoder_api_struct_ptr is access constant godot_gdnative_ext_videodecoder_api_struct with Convention => C;
    function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_videodecoder_api_struct_ptr);
 
-
    type godot_gdnative_ext_net_3_2_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:130
       version : aliased godot_gdnative_api_version;  -- gdnative_api_struct.gen.h:131
@@ -719,7 +725,6 @@ package GDNative.Thin is
 
    type godot_gdnative_ext_net_api_struct_ptr is access constant godot_gdnative_ext_net_api_struct with Convention => C;
    function To_Api_Struct_Ptr is new Ada.Unchecked_Conversion (godot_gdnative_api_struct_ptr, godot_gdnative_ext_net_api_struct_ptr);
-
 
    type godot_gdnative_core_1_2_api_struct is record
       c_type : aliased GDNATIVE_API_TYPES;  -- gdnative_api_struct.gen.h:148
@@ -1867,16 +1872,16 @@ package GDNative.Thin is
       godot_string_name_destroy : access procedure (arg1 : access godot_string_name);  -- gdnative_api_struct.gen.h:947
       godot_object_destroy : access procedure (arg1 : godot_object);  -- gdnative_api_struct.gen.h:948
       godot_global_get_singleton : access function (arg1 : ICS.chars_ptr) return godot_object;  -- gdnative_api_struct.gen.h:949
-      godot_method_bind_get_method : access function (p_classname : ICS.chars_ptr; p_methodname : ICS.chars_ptr) return access godot_method_bind;  -- gdnative_api_struct.gen.h:950
+      godot_method_bind_get_method : access function (p_classname : ICS.chars_ptr; p_methodname : ICS.chars_ptr) return godot_method_bind_ptr;  -- gdnative_api_struct.gen.h:950
       godot_method_bind_ptrcall : access procedure
-           (p_method_bind : access godot_method_bind;
+           (p_method_bind : godot_method_bind_ptr;
             p_instance : System.Address; -- godot_object * 
             p_args : System.Address; --const void **
             p_ret : System.Address); -- void * -- gdnative_api_struct.gen.h:951
       godot_method_bind_call : access function
-           (p_method_bind : access godot_method_bind;
+           (p_method_bind : godot_method_bind_ptr;
             p_instance : System.Address; -- godot_object *
-            p_args : Godot_Instance_Method_Args_Ptrs.Pointer; -- godot_variant **
+            p_args : access godot_variant_const_ptr; -- godot_variant **
             p_arg_count : IC.int; -- p_arg_count
             p_call_error : access godot_variant_call_error) 
             return godot_variant;  -- gdnative_api_struct.gen.h:952

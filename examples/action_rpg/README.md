@@ -15,7 +15,7 @@ or see LICENSE.md
 
 1. GNAT (Ada Compiler)
   * [AdaCore Community GNAT](https://www.adacore.com/download)
-    A version of FSF GNAT curated by Ada Core. Free for personal users, probably the highest quality and most used Ada Compiler. Supports Windows, Linux, and Mac
+    A version of FSF GNAT maintained by AdaCore. Free for personal users. Supports Windows, Linux, and Mac
   * [FSF GNAT](https://www.gnu.org/software/gnat/)
     GCC bundled open source version of GNAT. For linux use the above link, for windows use mingw or cygwin to install.
 2. [Godot](https://godotengine.org/download)

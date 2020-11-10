@@ -9,13 +9,9 @@ package body Engine_Hooks is
   procedure On_GDNative_Init (p_options : access Thin.godot_gdnative_init_options) is begin
     Context.GDNative_Initialize (p_options);
 
+    Action_RPG.Initialize;
+
     Console.Put ("GDNative Initialized!");
-  end;
-
-  procedure On_GDNative_Terminate (p_options : access Thin.godot_gdnative_terminate_options) is begin
-    Console.Put ("GDNative Finalized!");
-
-    Context.GDNative_Finalize (p_options);
   end;
 
   procedure On_Nativescript_Init (p_handle : Thin.Nativescript_Handle) is begin
@@ -30,4 +26,12 @@ package body Engine_Hooks is
     when Error : others => Exceptions.Put_Error (Error);
   end;
   
+  procedure On_GDNative_Terminate (p_options : access Thin.godot_gdnative_terminate_options) is begin
+    Console.Put ("GDNative Finalized!");
+
+    Action_RPG.Finalize;
+
+    Context.GDNative_Finalize (p_options);
+  end;
+
 end;

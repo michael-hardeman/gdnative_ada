@@ -22,6 +22,7 @@ library project GDNative_Ada is
                              "GDNative.Exceptions",
                              "GDNative.Console",
                              "GDNative.Math",
+                             "GDNative.Arrays",
                              "GDNative.Strings",
                              "GDNative.Variants",
                              "GDNative.Objects",

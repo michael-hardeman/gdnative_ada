@@ -26,7 +26,7 @@ package body GDNative.Math is
   -----------------
   -- New Vector2 --
   -----------------
-  function New_Vector2 (X, Y : in Float) return Vector2 is
+  function New_Vector2 (X, Y : in Real_64) return Vector2 is
     Result : aliased Thin.godot_vector2;
   begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
@@ -37,7 +37,7 @@ package body GDNative.Math is
   -----------------
   -- New Vector3 --
   -----------------
-  function New_Vector3 (X, Y, Z : in Float) return Vector3 is 
+  function New_Vector3 (X, Y, Z : in Real_64) return Vector3 is 
     Result : aliased Thin.godot_vector3;
   begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);

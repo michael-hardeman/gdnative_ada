@@ -17,8 +17,8 @@ package GDNative.Objects is
   procedure Enter_Tree      (Self : in out Node);
   procedure Exit_Tree       (Self : in out Node);
   procedure Ready           (Self : in out Node);
-  procedure Process         (Self : in out Node; Delta_Time : in Long_Float);
-  procedure Physics_Process (Self : in out Node; Delta_Time : in Long_Float);
+  procedure Process         (Self : in out Node; Delta_Time : in Real_64);
+  procedure Physics_Process (Self : in out Node; Delta_Time : in Real_64);
   
   -------------------------
   -- Object Registration --

@@ -3,9 +3,9 @@ with Interfaces.C.Strings;
 with Ada.Tags;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
+with Ada.Characters.Conversions;
 
 with GDNative.Thin;
-with GDNative.Strings;
 with GDNative.Context;
 with GDNative.Console;
 with GDNative.Exceptions;
@@ -16,14 +16,15 @@ package body GDNative.Objects is
   package IC  renames Interfaces.C;
   package ICS renames Interfaces.C.Strings;
   package AE  renames Ada.Exceptions;
+  package ACC renames Ada.Characters.Conversions;
 
   INVALID_REGISTRATION : constant Wide_String := "Calling default instance method implementation.";
 
-  procedure Enter_Tree      (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
-  procedure Exit_Tree       (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
-  procedure Ready           (Self : in out Node)                             is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
-  procedure Process         (Self : in out Node; Delta_Time : in Long_Float) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
-  procedure Physics_Process (Self : in out Node; Delta_Time : in Long_Float) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Enter_Tree      (Self : in out Node)                          is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Exit_Tree       (Self : in out Node)                          is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Ready           (Self : in out Node)                          is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Process         (Self : in out Node; Delta_Time : in Real_64) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
+  procedure Physics_Process (Self : in out Node; Delta_Time : in Real_64) is begin Exceptions.Put_Warning (INVALID_REGISTRATION); end;
  
 
   -------------------------
@@ -96,7 +97,7 @@ package body GDNative.Objects is
       pragma Assert (Context.Core_Initialized,         CORE_UNINITIALIZED_ASSERT);
       pragma Assert (Context.Nativescript_Initialized, NATIVESCRIP_UNINITIALIZED_ASSERT);
 
-      Console.Put ("Registering Class: " & Strings.To_Wide (Ada.Tags.External_Tag (New_Object'Tag)));
+      Console.Put ("Registering Class: " & ACC.To_Wide_String (Ada.Tags.External_Tag (New_Object'Tag)));
 
       Context.Nativescript_Api.godot_nativescript_register_class (
         Context.Nativescript_Ptr, 
@@ -136,17 +137,17 @@ package body GDNative.Objects is
   -- Common Parameters --
   -----------------------
   type Void_Parameters is null record;
-  subtype Long_Float_Parameters is Long_Float;
+  subtype Real_64_Parameters is Real_64;
 
   procedure Convert_Void_Parameters (
     Parameters : in out Void_Parameters;
     p_args     : in     Thin.Godot_Instance_Method_Args_Ptrs.Pointer) is null;
 
-  procedure Convert_Long_Float_Parameters (
-    Parameters : in out Long_Float_Parameters;
+  procedure Convert_Real_64_Parameters (
+    Parameters : in out Real_64_Parameters;
     p_args     : in     Thin.Godot_Instance_Method_Args_Ptrs.Pointer) 
   is begin
-    Parameters := Long_Float (Context.Core_Api.godot_variant_as_real (p_args.all));
+    Parameters := Real_64 (Context.Core_Api.godot_variant_as_real (p_args.all));
   end;
 
   --------------------
@@ -206,7 +207,7 @@ package body GDNative.Objects is
     procedure Call_Process (
       Instance   : in out New_Node;
       Result     : in out Void_Result;
-      Parameters : in     Long_Float_Parameters)
+      Parameters : in     Real_64_Parameters)
     is begin
       Process (Instance, Parameters);
     exception
@@ -218,7 +219,7 @@ package body GDNative.Objects is
     procedure Call_Physics_Process (
       Instance   : in out New_Node;
       Result     : in out Void_Result;
-      Parameters : in     Long_Float_Parameters)
+      Parameters : in     Real_64_Parameters)
     is begin
       Physics_Process (Instance, Parameters);
     exception
@@ -261,9 +262,9 @@ package body GDNative.Objects is
       New_Object         => New_Node, 
       Access_Object      => Access_New_Node,
       Cast               => Cast, 
-      Parameters_State   => Long_Float_Parameters, 
+      Parameters_State   => Real_64_Parameters, 
       Result_Type        => Void_Result, 
-      Convert_Parameters => Convert_Long_Float_Parameters, 
+      Convert_Parameters => Convert_Real_64_Parameters, 
       Call_Callback      => Call_Process,
       Convert_Result     => Convert_Void_Result);
 
@@ -271,9 +272,9 @@ package body GDNative.Objects is
       New_Object         => New_Node, 
       Access_Object      => Access_New_Node,
       Cast               => Cast, 
-      Parameters_State   => Long_Float_Parameters, 
+      Parameters_State   => Real_64_Parameters, 
       Result_Type        => Void_Result, 
-      Convert_Parameters => Convert_Long_Float_Parameters, 
+      Convert_Parameters => Convert_Real_64_Parameters, 
       Call_Callback      => Call_Physics_Process, 
       Convert_Result     => Convert_Void_Result);
 
@@ -287,7 +288,7 @@ package body GDNative.Objects is
       pragma Assert (Context.Core_Initialized,         CORE_UNINITIALIZED_ASSERT);
       pragma Assert (Context.Nativescript_Initialized, NATIVESCRIP_UNINITIALIZED_ASSERT);
 
-      Console.Put (Strings.To_Wide ("Registering Method: " & Ada.Tags.External_Tag (New_Node'Tag) & "." & Method_Name));
+      Console.Put (ACC.To_Wide_String ("Registering Method: " & Ada.Tags.External_Tag (New_Node'Tag) & "." & Method_Name));
 
       Context.Nativescript_Api.godot_nativescript_register_method (
         Context.Nativescript_Ptr,

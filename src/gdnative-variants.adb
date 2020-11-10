@@ -1,330 +1,395 @@
 with Interfaces.C;
 with Interfaces.C.Extensions;
 
-with Ada.Strings.Wide_Unbounded;
-
 with GDNative.Context;
-with GDNative.Strings;
 
 package body GDNative.Variants is
   
-  package IC   renames Interfaces.C;
-  package ICE  renames Interfaces.C.Extensions;
-  package ASWU renames Ada.Strings.Wide_Unbounded;
+  package IC  renames Interfaces.C;
+  package ICE renames Interfaces.C.Extensions;
 
-  -------------
-  -- Boolean --
-  -------------
-  function To_Ada (Item : access Thin.godot_variant) return Boolean is begin
+  --------------
+  -- Finalize --
+  --------------
+  procedure Finalize (Object : in out Variant) is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Boolean (Context.Core_Api.godot_variant_as_bool (Item));
+    Context.Core_Api.godot_variant_destroy (Object.Low'access);
   end;
 
-  -------------
-  -- Natural --
-  -------------
-  function To_Ada (Item : access Thin.godot_variant) return Natural is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Natural (Context.Core_Api.godot_variant_as_uint (Item));
-  end;
+  ---------
+  -- Ref --
+  ---------
+  function Ref (Item : in Variant) return Thin.godot_variant_const_ptr is (Item.Low'unchecked_access);
 
-  ------------------
-  -- Long Integer --
-  ------------------
-  function To_Ada (Item : access Thin.godot_variant) return Long_Integer is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Long_Integer (Context.Core_Api.godot_variant_as_int (Item));
+  ----------
+  -- Kind --
+  ----------
+  function Kind (Item : in Variant) return Variant_Kind is begin
+    return Variant_Kind'Val (Thin.godot_variant_type'Pos (Context.Core_Api.godot_variant_get_type (Item.Low'access)));
   end;
 
   ----------------
-  -- Long Float --
+  -- Initialize --
   ----------------
-  function To_Ada (Item : access Thin.godot_variant) return Long_Float is begin
+  procedure Initialize (Item : in out Variant; Value : in Thin.godot_variant_ptr) is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Long_Float (Context.Core_Api.godot_variant_as_real (Item));
-  end;
-
-  -------------
-  -- Vector2 --
-  -------------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Vector2 is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_vector2 (Item));
-  end;
-
-  -----------
-  -- Rect2 --
-  -----------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Rect2 is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_rect2 (Item));
-  end;
-
-  -------------
-  -- Vector3 --
-  -------------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Vector3 is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_vector3 (Item));
-  end;
-
-  -----------------
-  -- Transform2d --
-  -----------------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Transform2d is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_transform2d (Item));
-  end;
-
-  -----------
-  -- Plane --
-  -----------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Plane is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_plane (Item));
-  end;
-
-  ----------
-  -- Quat --
-  ----------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Quat is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_quat (Item));
-  end;
-
-  ----------
-  -- AABB --
-  ----------
-  function To_Ada (Item : access Thin.godot_variant) return Math.AABB is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_aabb (Item));
-  end;
-
-  -----------
-  -- Basis --
-  -----------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Basis is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_basis (Item));
-  end;
-
-  ---------------
-  -- Transform --
-  ---------------
-  function To_Ada (Item : access Thin.godot_variant) return Math.Transform is begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Math.To_Ada (Context.Core_Api.godot_variant_as_transform (Item));
-  end;
-
-  -----------------
-  -- Wide String --
-  -----------------
-  function To_Ada (Item : access Thin.godot_variant) return Wide_String is
-    function Impl (Item : access Thin.godot_variant) return Wide_String is
-      G_String : aliased Thin.godot_string := Context.Core_Api.godot_variant_as_string (Item);
-      Result   : Wide_String               := Strings.To_Ada (G_String'access);
-    begin
-      Context.Core_Api.godot_string_destroy (G_String'access);
-      return Result;
-    end;
-  begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Impl (Item);
-  end;
-
-  --------------------------
-  -- Array of Wide String --
-  --------------------------
-  function To_Ada (Item : access Thin.godot_variant) return Wide_String_Array is
-    function Impl (Item : access Thin.godot_variant) return Wide_String_Array is
-      use type Thin.godot_int;
-      G_Array : aliased Thin.godot_array := Context.Core_Api.godot_variant_as_array (Item);
-      Length  : Thin.godot_int           := (Context.Core_Api.godot_array_size (G_Array'access));
-      Current : aliased Thin.godot_variant;
-      Result  : Wide_String_Array (1 .. Natural (Length));
-      Result_I: Natural := 1;
-    begin
-      if Length = 0 then return Result; end if;
-      for I in 0 .. Length - 1 loop
-        Current := Context.Core_Api.godot_array_get (G_Array'access, I);
-        declare
-          Temp : Wide_String := To_Ada (Current'access);
-        begin
-          Result (Result_I) := ASWU.To_Unbounded_Wide_String (Temp);
-        end;
-        Context.Core_Api.godot_variant_destroy (Current'access);
-        Result_I := Result_I + 1;
-      end loop;
-      return Result;
-    end;
-  begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    return Impl (Item);
+    Context.Core_Api.godot_variant_new_copy (Item.Low'access, Value);
   end;
 
   -------------
   -- Boolean --
   -------------
-  function To_Godot (Item : in Boolean) return Thin.godot_variant is 
-    Result : aliased Thin.godot_variant;
-  begin
+  -- godot_variant_new_bool
+  procedure Initialize (Item : in out Variant; Value : in Boolean) is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_bool (Result'access, Thin.godot_bool (Item));
-    return Result;
+    Context.Core_Api.godot_variant_new_bool (Item.Low'access, Thin.godot_bool (Value));
+  end;
+
+  ---------------------
+  -- Int 64 Unsigned --
+  ---------------------
+  -- godot_variant_new_uint
+  procedure Initialize (Item : in out Variant; Value : in Int_64_Unsigned) is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Context.Core_Api.godot_variant_new_uint (Item.Low'access, ICE.long_long (Value));
+  end;
+
+  -------------------
+  -- Int 64 Signed --
+  -------------------
+  -- godot_variant_new_int
+  procedure Initialize (Item : in out Variant; Value : in Int_64_Signed) is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Context.Core_Api.godot_variant_new_int (Item.Low'access, IC.long (Value));
   end;
 
   -------------
-  -- Natural --
+  -- Real 64 --
   -------------
-  function To_Godot (Item : in Natural) return Thin.godot_variant is 
-    Result : aliased Thin.godot_variant;
-  begin
+  -- godot_variant_new_real
+  procedure Initialize (Item : in out Variant; Value : in Real_64) is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_uint (Result'access, ICE.long_long (Item));
-    return Result;
+    Context.Core_Api.godot_variant_new_real (Item.Low'access, IC.double (Value));
   end;
 
-  ------------------
-  -- Long Integer --
-  ------------------
-  function To_Godot (Item : in Long_Integer) return Thin.godot_variant is 
-    Result : aliased Thin.godot_variant;
-  begin
+  -------------
+  -- GString --
+  -------------
+  -- godot_variant_new_string
+  procedure Initialize (Item : in out Variant; Value : in Strings.GString) is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_int (Result'access, IC.long (Item));
-    return Result;
-  end;
-
-  ----------------
-  -- Long Float --
-  ----------------
-  function To_Godot (Item : in Long_Float) return Thin.godot_variant is 
-    Result : aliased Thin.godot_variant;
-  begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_real (Result'access, IC.double (Item));
-    return Result;
+    Context.Core_Api.godot_variant_new_string (Item.Low'access, Strings.Ref (Value));
   end;
 
   -----------------
   -- Wide_String --
   -----------------
-  function To_Godot (Item : in Wide_String) return Thin.godot_variant is 
-    G_String : aliased Thin.godot_string := Strings.To_Godot (Item);
-    Result   : aliased Thin.godot_variant; 
+  procedure Initialize (Item : in out Variant; Value : in Wide_String) is
+    Temp : Strings.GString;
   begin
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_string (Result'access, G_String'access);
-    Context.Core_Api.godot_string_destroy (G_String'access);
-    return Result;
+    Strings.Initialize (Temp, Value);
+    Initialize (Item, Temp);
   end;
-
+  
   -------------
   -- Vector2 --
   -------------
-  function To_Godot (Item : in Math.Vector2) return Thin.godot_variant is 
-    G_Vector2 : aliased Thin.godot_vector2 := Math.To_Godot (Item);
-    Result    : aliased Thin.godot_variant;
-  begin 
+  -- godot_variant_new_vector2
+  procedure Initialize (Item : in out Variant; Value : in Math.Vector2) is
+    Temp : aliased Thin.godot_vector2;
+  begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_vector2 (Result'access, G_Vector2'access);
-    return Result;
-  end;
-
-  -------------
-  -- Vector3 --
-  -------------
-  function To_Godot (Item : in Math.Vector3) return Thin.godot_variant is
-    G_Vector3 : aliased Thin.godot_vector3 := Math.To_Godot (Item);
-    Result    : aliased Thin.godot_variant;
-  begin 
-    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_vector3 (Result'access, G_Vector3'access);
-    return Result;
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_vector2 (Item.Low'access, Temp'access);
   end;
 
   -----------
   -- Rect2 --
   -----------
-  function To_Godot (Item : in Math.Rect2) return Thin.godot_variant is
-    G_Rect2 : aliased Thin.godot_rect2 := Math.To_Godot (Item);
-    Result  : aliased Thin.godot_variant;
+  -- godot_variant_new_rect2
+  procedure Initialize (Item : in out Variant; Value : in Math.Rect2) is
+    Temp : aliased Thin.godot_rect2;
   begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_rect2 (Result'access, G_Rect2'access);
-    return Result;
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_rect2 (Item.Low'access, Temp'access);
+  end;
+
+  -------------
+  -- Vector3 --
+  -------------
+  -- godot_variant_new_vector3
+  procedure Initialize (Item : in out Variant; Value : in Math.Vector3) is
+    Temp : aliased Thin.godot_vector3;
+  begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_vector3 (Item.Low'access, Temp'access);
   end;
 
   -----------------
   -- Transform2d --
   -----------------
-  function To_Godot (Item : in Math.Transform2d) return Thin.godot_variant is
-    G_Transform2d : aliased Thin.godot_transform2d := Math.To_Godot (Item);
-    Result        : aliased Thin.godot_variant;
+  -- godot_variant_new_transform2d
+  procedure Initialize (Item : in out Variant; Value : in Math.Transform2d) is 
+    Temp : aliased Thin.godot_transform2d;
   begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_transform2d (Result'access, G_Transform2d'access);
-    return Result;
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_transform2d (Item.Low'access, Temp'access);
   end;
 
   -----------
   -- Plane --
   -----------
-  function To_Godot (Item : in Math.Plane) return Thin.godot_variant is
-    G_Plane : aliased Thin.godot_plane := Math.To_Godot (Item);
-    Result  : aliased Thin.godot_variant;
+  -- godot_variant_new_plane
+  procedure Initialize (Item : in out Variant; Value : in Math.Plane) is
+    Temp : aliased Thin.godot_plane;
   begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_plane (Result'access, G_Plane'access);
-    return Result;
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_plane (Item.Low'access, Temp'access);
   end;
 
   ----------
   -- Quat --
   ----------
-  function To_Godot (Item : in Math.Quat) return Thin.godot_variant is
-    G_Quat : aliased Thin.godot_quat := Math.To_Godot (Item);
-    Result : aliased Thin.godot_variant;
+  -- godot_variant_new_quat
+  procedure Initialize (Item : in out Variant; Value : in Math.Quat) is
+    Temp : aliased Thin.godot_quat;
   begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_quat (Result'access, G_Quat'access);
-    return Result;
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_quat (Item.Low'access, Temp'access);
+  end;
+  
+  ----------
+  -- AABB --
+  ----------
+  -- godot_variant_new_aabb
+  procedure Initialize (Item : in out Variant; Value : in Math.AABB) is 
+    Temp : aliased Thin.godot_aabb;
+  begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_aabb (Item.Low'access, Temp'access);
+  end;
+  
+  -----------
+  -- Basis --
+  -----------
+  -- godot_variant_new_basis
+  procedure Initialize (Item : in out Variant; Value : in Math.Basis) is
+    Temp : aliased Thin.godot_basis;
+  begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_basis (Item.Low'access, Temp'access);
+  end;
+  
+  ---------------
+  -- Transform --
+  ---------------
+  -- godot_variant_new_transform
+  procedure Initialize (Item : in out Variant; Value : in Math.Transform) is
+    Temp : aliased Thin.godot_transform;
+  begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Temp := Math.To_Godot (Value);
+    Context.Core_Api.godot_variant_new_transform (Item.Low'access, Temp'access);
+  end;
+
+  -- TODO: godot_variant_new_color
+  -- TODO: godot_variant_new_node_path
+  -- TODO: godot_variant_new_rid
+  -- TODO: godot_variant_new_object
+  -- TODO: godot_variant_new_dictionary
+  -- TODO: godot_variant_new_array
+  -- TODO: godot_variant_new_pool_byte_array
+  -- TODO: godot_variant_new_pool_int_array
+  -- TODO: godot_variant_new_pool_real_array
+  -- TODO: godot_variant_new_pool_string_array
+  -- TODO: godot_variant_new_pool_vector2_array
+  -- TODO: godot_variant_new_pool_vector3_array
+  -- TODO: godot_variant_new_pool_color_array
+
+  -----------
+  -- Value --
+  -----------
+  -----------------------
+  -- Assert_Kind_Match --
+  -----------------------
+  procedure Assert_Kind_Match (Actual : in Variant; Target : in Variant_Kind) is
+    Actual_Kind : Variant_Kind := Kind (Actual);
+  begin
+    if Actual_Kind = Target then return; end if;
+    raise Program_Error with "Invalid value access : Target = " & Target'Image & " Actual = " & Actual_Kind'Image;
+  end;
+
+  -------------
+  -- Boolean --
+  -------------
+  -- godot_variant_as_bool
+  function Value (Item : in Variant) return Boolean is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Bool_Kind);
+    return Boolean (Context.Core_Api.godot_variant_as_bool (Item.Low'access));
+  end;
+
+  ---------------------
+  -- Int_64_Unsigned --
+  ---------------------
+  -- godot_variant_as_uint
+  function Value (Item : in Variant) return Int_64_Unsigned is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Int_Kind);
+    return Int_64_Unsigned (Context.Core_Api.godot_variant_as_uint (Item.Low'access));
+  end;
+
+  -------------------
+  -- Int_64_Signed --
+  -------------------
+  -- TODO: godot_variant_as_int
+  function Value (Item : in Variant) return Int_64_Signed is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Int_Kind);
+    return Int_64_Signed (Context.Core_Api.godot_variant_as_int (Item.Low'access));
+  end;
+
+  -------------
+  -- Real_64 --
+  -------------
+  -- TODO: godot_variant_as_real
+  function Value (Item : in Variant) return Real_64 is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Real_Kind);
+    return Real_64 (Context.Core_Api.godot_variant_as_real (Item.Low'access));
+  end;
+
+  -------------
+  -- GString --
+  -------------
+  -- TODO: godot_variant_as_string
+  procedure Value (Item : in Variant; Result : out Strings.GString) is 
+    Temp : aliased Thin.godot_string;
+  begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, String_Kind);
+    Temp := Context.Core_Api.godot_variant_as_string (Item.Low'access);
+    Strings.Copy (Result, Temp'unchecked_access);
+  end;
+
+  -----------------
+  -- Wide_String --
+  -----------------
+  function Value (Item : in Variant) return Wide_String is
+    Temp : Strings.GString;
+  begin
+    Value (Item, Temp);
+    return Strings.Image (Temp);
+  end;
+
+  -------------
+  -- Vector2 --
+  -------------
+  -- godot_variant_as_vector2
+  function Value (Item : in Variant) return Math.Vector2 is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Vector2_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_vector2 (Item.Low'access));
+  end;
+
+  -----------
+  -- Rect2 --
+  -----------
+  -- godot_variant_as_rect2
+  function Value (Item : in Variant) return Math.Rect2 is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Rect2_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_rect2 (Item.Low'access));
+  end;
+
+  -------------
+  -- Vector3 --
+  -------------
+  -- godot_variant_as_vector3
+  function Value (Item : in Variant) return Math.Vector3 is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Vector3_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_vector3 (Item.Low'access));
+  end;
+
+  -----------------
+  -- Transform2d --
+  -----------------
+  -- godot_variant_as_transform2d
+  function Value (Item : in Variant) return Math.Transform2d is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Transform2d_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_transform2d (Item.Low'access));
+  end;
+
+  -----------
+  -- Plane --
+  -----------
+  -- godot_variant_as_plane
+  function Value (Item : in Variant) return Math.Plane is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Plane_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_plane (Item.Low'access));
+  end;
+
+  ----------
+  -- Quat --
+  ----------
+  -- godot_variant_as_quat
+  function Value (Item : in Variant) return Math.Quat is begin
+    pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
+    Assert_Kind_Match (Item, Quat_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_quat (Item.Low'access));
   end;
 
   ----------
   -- AABB --
   ----------
-  function To_Godot (Item : in Math.AABB) return Thin.godot_variant is
-    G_AABB : aliased Thin.godot_aabb := Math.To_Godot (Item);
-    Result : aliased Thin.godot_variant;
-  begin
+  -- godot_variant_as_aabb
+  function Value (Item : in Variant) return Math.AABB is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_aabb (Result'access, G_AABB'access);
-    return Result;
+    Assert_Kind_Match (Item, AABB_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_aabb (Item.Low'access));
   end;
 
   -----------
   -- Basis --
   -----------
-  function To_Godot (Item : in Math.Basis) return Thin.godot_variant is
-    G_Basis : aliased Thin.godot_basis := Math.To_Godot (Item);
-    Result  : aliased Thin.godot_variant;
-  begin
+  -- godot_variant_as_basis
+  function Value (Item : in Variant) return Math.Basis is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_basis (Result'access, G_Basis'access);
-    return Result;
+    Assert_Kind_Match (Item, Basis_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_basis (Item.Low'access));
   end;
 
   ---------------
   -- Transform --
   ---------------
-  function To_Godot (Item : in Math.Transform) return Thin.godot_variant is
-    G_Transform : aliased Thin.godot_transform := Math.To_Godot (Item);
-    Result      : aliased Thin.godot_variant;
-  begin
+  -- godot_variant_as_transform
+  function Value (Item : in Variant) return Math.Transform is begin
     pragma Assert (Context.Core_Initialized, CORE_UNINITIALIZED_ASSERT);
-    Context.Core_Api.godot_variant_new_transform (Result'access, G_Transform'access);
-    return Result;
+    Assert_Kind_Match (Item, Transform_Kind);
+    return Math.To_Ada (Context.Core_Api.godot_variant_as_transform (Item.Low'access));
   end;
 
+  -- TODO: godot_variant_as_color
+  -- TODO: godot_variant_as_node_path
+  -- TODO: godot_variant_as_rid
+  -- TODO: godot_variant_as_object
+  -- TODO: godot_variant_as_dictionary
+  -- TODO: godot_variant_as_array
+  -- TODO: godot_variant_as_pool_byte_array
+  -- TODO: godot_variant_as_pool_int_array
+  -- TODO: godot_variant_as_pool_real_array
+  -- TODO: godot_variant_as_pool_string_array
+  -- TODO: godot_variant_as_pool_vector2_array
+  -- TODO: godot_variant_as_pool_vector3_array
+  -- TODO: godot_variant_as_pool_color_array
 end;

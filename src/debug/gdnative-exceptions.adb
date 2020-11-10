@@ -4,6 +4,7 @@ with Interfaces.C.Strings;
 with Ada.Exceptions;
 with Ada.Exceptions.Traceback;
 with Ada.Finalization;
+with Ada.Characters.Conversions;
 
 with GNAT.Traceback;
 with GNAT.Traceback.Symbolic;
@@ -18,6 +19,7 @@ package body GDNative.Exceptions is
   package ICS renames Interfaces.C.Strings;
   package AE  renames Ada.Exceptions;
   package AF  renames Ada.Finalization;
+  package ACC renames Ada.Characters.Conversions;
   package GT  renames GNAT.Traceback;
   package GTS renames GNAT.Traceback.Symbolic;
 
@@ -66,7 +68,7 @@ package body GDNative.Exceptions is
   -- Put Warning --
   -----------------
   procedure Put_Warning (Message : in Wide_String) is
-    Description : ICS.chars_ptr := ICS.New_String (Strings.To_Str (Message));
+    Description : ICS.chars_ptr := ICS.New_String (ACC.To_String (Message));
     Report      : Error_Report;
   begin
     pragma Assert (Context.Core_Initialized, "Please run Context.GDNative_Initialize");

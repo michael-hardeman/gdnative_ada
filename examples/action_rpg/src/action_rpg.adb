@@ -4,7 +4,32 @@ with GDNative.Input;
 package body Action_RPG is
   use GDNative;
 
-  procedure Physics_Process (Self : in out Player; Delta_Time : in Long_Float) is begin
+  ----------------
+  -- Initialize --
+  ----------------
+  procedure Initialize is begin
+    null;
+  end;
+
+  ----------------------
+  -- Register Classes --
+  ----------------------
+  procedure Register_Classes is begin
+    Player_Registration.Register_Class;
+    Player_Registration.Register_Physics_Process;
+  end;
+
+  --------------
+  -- Finalize --
+  --------------
+  procedure Finalize is begin
+    null;
+  end;
+
+  ------------
+  -- Player --
+  ------------
+  procedure Physics_Process (Self : in out Player; Delta_Time : in Real_64) is begin
     if Input.Is_Action_Pressed ("ui_up") then
       Console.Put ("Up Pressed");
     elsif Input.Is_Action_Pressed ("ui_right") then
@@ -14,11 +39,6 @@ package body Action_RPG is
     elsif Input.Is_Action_Pressed ("ui_left") then
       Console.Put ("Left Pressed");
     end if;
-  end;
-
-  procedure Register_Classes is begin
-    Player_Registration.Register_Class;
-    Player_Registration.Register_Physics_Process;
   end;
 
 end;
